@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Батя на рыбалке: Золотой Карп</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+  html,body{width:100%;height:100%;overflow:hidden;background:#0d3550;font-family:"Trebuchet MS",Arial,sans-serif;touch-action:none;color:#fff}
+  canvas#c{display:block;width:100%;height:100%}
+  .hidden{display:none!important}
+  #hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;z-index:3;pointer-events:none}
+  #coins{font-size:24px;font-weight:bold;background:rgba(0,0,0,.35);padding:6px 14px;border-radius:14px;color:#ffd84a;text-shadow:0 2px 3px rgba(0,0,0,.5)}
+  #hud .btns{pointer-events:auto;display:flex;gap:4px;position:absolute;right:8px;top:10px}
+  .ib{background:rgba(0,0,0,.35);border:0;color:#fff;border-radius:12px;font-size:20px;width:40px;height:40px;cursor:pointer}
+  .ib.off{opacity:.45}
+  #timeChip{font-size:13px;font-weight:bold;background:rgba(0,0,0,.45);padding:4px 10px;border-radius:10px;white-space:nowrap;cursor:pointer}
+  #baitChip{pointer-events:auto;cursor:pointer;font-size:13px;font-weight:bold;background:linear-gradient(#9cf07a,#43c02a);color:#0d3a03;padding:4px 10px;border-radius:10px;box-shadow:0 3px 0 #23780f;white-space:nowrap}
+  .ib:active{transform:scale(.92)}
+  .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,20,35,.7);z-index:6;padding:16px}
+  .panel{background:linear-gradient(#fff8e6,#f1dfb5);color:#3b2410;border-radius:20px;padding:20px;width:100%;max-width:400px;max-height:92vh;overflow:auto;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.5);border:4px solid #8a5a2b}
+  .panel h2{font-size:26px;margin-bottom:6px;color:#6b3b12}
+  .panel .muted{opacity:.75;font-size:15px}
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:13px;font-size:20px;font-weight:bold;cursor:pointer;margin-top:10px;color:#3a1d05;background:linear-gradient(#ffe27a,#ffb627);box-shadow:0 5px 0 #b36a1e}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b36a1e}
+  .btn.green{background:linear-gradient(#9cf07a,#43c02a);box-shadow:0 5px 0 #23780f;color:#0d3a03}
+  .btn.grey{background:#d9c9a8;box-shadow:0 5px 0 #a8916a;color:#5a4426;font-size:17px}
+  .btn:disabled{opacity:.45}
+  .row{display:flex;align-items:center;gap:10px;text-align:left;background:rgba(255,255,255,.55);border-radius:14px;padding:10px;margin-top:10px}
+  .row .ico{font-size:32px}
+  .row .info{flex:1;font-size:14px}
+  .row .info b{font-size:17px}
+  .row .buy{border:0;border-radius:10px;padding:10px 12px;font-weight:bold;font-size:15px;background:linear-gradient(#ffe27a,#ffb627);color:#3a1d05;cursor:pointer;min-width:86px}
+  .row .buy:disabled{opacity:.4}
+  .row.sel{outline:3px solid #43c02a}
+  .tabs{display:flex;gap:4px;margin:6px 0}
+  .gbody{font-size:14px;line-height:1.45}
+  .gbody h3{font-size:17px;margin:12px 0 4px;color:#6b3b12}
+  .gbody p{margin:4px 0}
+  .gbody .tip{background:rgba(67,192,42,.15);border-left:4px solid #43c02a;padding:6px 8px;border-radius:6px;margin:8px 0}
+  .gbody table{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
+  .gbody td,.gbody th{border-bottom:1px solid rgba(0,0,0,.1);padding:4px 3px;vertical-align:top}
+  .gbody th{text-align:left;color:#6b3b12}
+  .tabs#guideTabs button{flex:1 1 30%}
+  .tabs button{flex:1;border:0;border-radius:10px;padding:8px 2px;font-weight:bold;font-size:13px;background:#d9c9a8;color:#5a4426;cursor:pointer}
+  .tabs button.on{background:linear-gradient(#ffe27a,#ffb627);color:#3a1d05}
+  .row .tags{font-size:12px;opacity:.8}
+  .lvl{display:inline-block;width:12px;height:8px;border-radius:3px;background:#c9b48a;margin-right:2px}
+  .lvl.on{background:#43c02a}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .card{background:rgba(255,255,255,.55);border-radius:12px;padding:6px;font-size:13px}
+  .card canvas{width:100%;height:56px}
+  .card b{display:block;font-size:15px}
+  .big{font-size:34px;font-weight:bold;color:#b8560f}
+  .badge{display:inline-block;background:#e0452b;color:#fff;border-radius:8px;padding:2px 8px;font-size:13px;font-weight:bold;margin-left:4px}
+  #fishCv{width:100%;height:130px}
+  #rQuote{font-style:italic;font-size:16px;margin-top:6px;color:#5a3a1a}
+  #adFake{position:fixed;inset:0;background:#111;color:#aaa;display:flex;align-items:center;justify-content:center;font-size:20px;z-index:20}
+  #menu h1{font-size:clamp(36px,10vw,58px);color:#ffd84a;text-shadow:0 4px 0 #8a4a12,0 8px 20px rgba(0,0,0,.5);line-height:1.05;margin-bottom:10px}
+  #menu .inner{text-align:center;max-width:420px}
+  #menu p{font-size:17px;line-height:1.4;margin:10px 0 14px;opacity:.95}
+  #menu .subtitle{font-size:clamp(20px,5.5vw,28px);font-weight:bold;color:#ffe9a8;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+  #menu .path{background:rgba(0,0,0,.35);border-radius:12px;padding:8px 10px;font-size:15px;font-weight:bold}
+  #hudL{display:flex;flex-direction:column;gap:6px;align-items:flex-start;pointer-events:auto;max-width:62%}
+  #locName{white-space:nowrap;font-size:14px;font-weight:bold;background:rgba(0,0,0,.35);padding:3px 10px;border-radius:10px}
+  #goal{position:fixed;left:50%;transform:translateX(-50%);top:110px;z-index:3;background:linear-gradient(#ffe27a,#ffb627);color:#3a1d05;font-weight:bold;font-size:13px;padding:5px 12px;border-radius:12px;box-shadow:0 3px 0 #b36a1e;cursor:pointer;max-width:94%;text-align:center;width:max-content;line-height:1.25}
+  #lvl{font-size:12px;white-space:nowrap;font-weight:bold;background:rgba(0,0,0,.35);padding:3px 10px 5px;border-radius:10px;min-width:150px}
+  #lvl .bar{height:5px;background:rgba(255,255,255,.25);border-radius:3px;margin-top:3px;overflow:hidden}
+  #lvl .bar i{display:block;height:100%;background:#7ae0ff;width:0}
+  #quests{position:fixed;right:8px;top:150px;z-index:3;display:flex;flex-direction:column;gap:5px;align-items:flex-end;pointer-events:none;max-width:78%}
+  #quests div{background:rgba(0,0,0,.45);font-size:12px;font-weight:bold;padding:4px 9px;border-radius:10px;text-align:right;line-height:1.25}
+  #quests .done{background:#43c02a}
+  #quests .zhor{background:linear-gradient(#ff7a3a,#e0362a);font-size:13px;animation:pulse .6s infinite alternate}
+  @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.06)}}
+  #toast{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:5;background:linear-gradient(#fff3c4,#ffd36a);color:#5a2d05;border:4px solid #b36a1e;border-radius:18px;padding:14px 22px;text-align:center;font-weight:bold;box-shadow:0 10px 30px rgba(0,0,0,.5);pointer-events:none;max-width:90%;min-width:260px;transition:opacity .4s,transform .4s}
+  #toast.hide{opacity:0;transform:translate(-50%,-30%) scale(.9)}
+  #toast .t1{font-size:24px}#toast .t2{font-size:16px;margin-top:4px}
+  .bonusline{font-size:14px;font-weight:bold;color:#2a7a12;margin-top:2px}
+  .sect{grid-column:1/-1;text-align:left;font-weight:bold;font-size:17px;margin-top:8px;color:#6b3b12}
+  .loc{display:flex;align-items:center;gap:10px;text-align:left;border-radius:14px;padding:10px;margin-top:10px;background:rgba(255,255,255,.55)}
+  .loc.cur{outline:3px solid #43c02a}
+  .loc.locked{opacity:.85;background:rgba(120,100,70,.18)}
+  .loc .ico{font-size:34px}
+  .loc .info{flex:1;font-size:13px}
+  .loc .info b{font-size:17px}
+  .loc button{border:0;border-radius:10px;padding:10px;font-weight:bold;font-size:14px;cursor:pointer;min-width:92px;background:linear-gradient(#9cf07a,#43c02a);color:#0d3a03}
+  .loc button.pay{background:linear-gradient(#ffe27a,#ffb627);color:#3a1d05}
+  .loc button:disabled{opacity:.4}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud" class="hidden">
+  <div id="hudL"><div id="coins">🪙 0</div><div id="lvl"><span id="lvlTxt"></span><div class="bar"><i id="lvlBar"></i></div></div><div style="display:flex;gap:6px;pointer-events:auto"><div id="baitChip"></div><div id="timeChip"></div></div></div>
+  <div class="btns">
+    <button class="ib" id="bMap">🗺️</button>
+    <button class="ib" id="bShop">🛒</button>
+    <button class="ib" id="bBook">📖</button>
+    <button class="ib" id="bGuide">❓</button>
+    <button class="ib" id="bMusic">🎵</button>
+    <button class="ib" id="bMute">🔊</button>
+  </div>
+</div>
+
+<div id="goal" class="hidden"></div>
+<div id="quests" class="hidden"></div>
+<div id="toast" class="hide"><div class="t1" id="tT1"></div><div class="t2" id="tT2"></div></div>
+
+<div id="map" class="overlay hidden">
+  <div class="panel">
+    <h2>Куда поедем, Батя?</h2>
+    <div class="muted">Жене скажем, что в гараж</div>
+    <div id="mapList"></div>
+    <button class="btn grey" id="bMapClose">Остаться тут</button>
+  </div>
+</div>
+
+<div id="menu" class="overlay">
+  <div class="inner">
+    <h1>БАТЯ<br>НА РЫБАЛКЕ</h1>
+    <div class="subtitle">🏆 Охота на Золотого Карпа</div>
+    <p>Тридцать лет Батя рассказывает про <b>Золотого Карпа из Легендарной заводи</b>. Ему никто не верит.<br>Сказал жене — «на часик». Пройди путь от пруда до моря, прокачай снасти и <b>докажи всем, что Карп существует!</b></p>
+    <div class="path">🏡 Пруд → 🌊 Река → ⛰️ Озеро → 🐋 Море → ✨ Заводь</div>
+    <p style="font-size:15px;opacity:.85">Жди поклёвку и <b>подсекай вовремя</b>. Держи палец — мотай, отпускай, когда леска визжит громче тёщи.</p>
+    <button class="btn" id="bStart">ЖЕНЕ СКАЗАЛ — НА ЧАСИК!</button>
+  </div>
+</div>
+
+<div id="result" class="overlay hidden">
+  <div class="panel">
+    <h2 id="rTitle">Улов!</h2>
+    <canvas id="fishCv"></canvas>
+    <div><b id="rName" style="font-size:22px"></b><span id="rBadge"></span></div>
+    <div class="muted" id="rWeight"></div>
+    <div id="rQuote"></div>
+    <div class="bonusline" id="rBonus"></div>
+    <div class="big" id="rPrice"></div>
+    <button class="btn green" id="bDouble">📺 Продать ×2 за рекламу</button>
+    <button class="btn" id="bSell">Продать</button>
+  </div>
+</div>
+
+<div id="shop" class="overlay hidden">
+  <div class="panel">
+    <h2>Лавка «Всё для Бати»</h2>
+    <div class="muted">Жене о ценах — ни слова</div>
+    <div id="shopList"></div>
+    <button class="btn grey" id="bShopClose">Спрятать кошелёк</button>
+  </div>
+</div>
+
+<div id="baits" class="overlay hidden">
+  <div class="panel">
+    <h2>Батин ящик со снастями</h2>
+    <div class="tabs" id="gearTabs"></div>
+    <div class="muted" id="gearHint"></div>
+    <div id="baitList"></div>
+    <button class="btn grey" id="bBaitClose">Закрыть ящик</button>
+  </div>
+</div>
+
+<div id="guide" class="overlay hidden">
+  <div class="panel" style="text-align:left">
+    <h2 style="text-align:center">Батин гайд по рыбалке</h2>
+    <div class="muted" style="text-align:center">Всё, что Батя знает. Почти всё</div>
+    <div class="tabs" id="guideTabs" style="flex-wrap:wrap"></div>
+    <div id="guideBody" class="gbody"></div>
+    <button class="btn grey" id="bGuideClose">Понял, пошёл ловить</button>
+  </div>
+</div>
+
+<div id="book" class="overlay hidden">
+  <div class="panel">
+    <h2>Журнал Батиных подвигов</h2>
+    <div class="muted" id="bookStat"></div>
+    <div class="grid" id="bookList"></div>
+    <button class="btn grey" id="bBookClose">Хватит хвастаться</button>
+  </div>
+</div>
+
+<div id="adFake" class="hidden">Реклама… Батя пока наливает чай из термоса</div>
+
+<script>
+/* =========================================================
+   ПЛАТФОРМА: Яндекс Игры / заглушка (для Пикабу — те же функции)
+   ========================================================= */
+const Platform={
+  ysdk:null,
+  async init(){ try{ if(window.YaGames) this.ysdk=await YaGames.init(); }catch(e){} },
+  gameReady(){ try{ this.ysdk&&this.ysdk.features.LoadingAPI&&this.ysdk.features.LoadingAPI.ready(); }catch(e){} },
+  showFullscreen(done){
+    if(this.ysdk) this.ysdk.adv.showFullscreenAdv({callbacks:{onClose:()=>done(),onError:()=>done()}});
+    else fakeAd(done);
+  },
+  showRewarded(onReward,done){
+    if(this.ysdk) this.ysdk.adv.showRewardedVideo({callbacks:{onRewarded:()=>onReward(),onClose:()=>done(),onError:()=>done()}});
+    else fakeAd(()=>{onReward();done();});
+  }
+};
+function fakeAd(cb){const el=document.getElementById('adFake');el.classList.remove('hidden');setTimeout(()=>{el.classList.add('hidden');cb();},1200);}
+
+/* ===== Сохранение ===== */
+const SAVE_KEY='rybalka_save_v1';
+let save={coins:0,rod:0,line:0,bait:0,journal:{},total:0,muted:false,loc:'pond',unlocked:['pond'],goldCaught:false,lvl:1,xp:0,quests:[],baits:['bread','worm'],curBait:'worm',music:true,gameT:0,lines:['l10','l20'],curLine:'l20',hooks:['h16','h12'],curHook:'h12',bobbers:['b_foam'],curBob:'b_foam'};
+try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s)save=Object.assign(save,s);}catch(e){}
+function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
+
+/* ===== Звук ===== */
+let actx=null;
+function tone(f,d=.1,type='sine',v=.12,slide=0){
+  if(save.muted)return;
+  try{
+    if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime;
+    o.type=type;o.frequency.setValueAtTime(f,t);
+    if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+d);
+    g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);
+    o.connect(g).connect(actx.destination);o.start(t);o.stop(t+d);
+  }catch(e){}
+}
+function noise(d=.25,v=.15){
+  if(save.muted)return;
+  try{
+    if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
+    const len=actx.sampleRate*d,b=actx.createBuffer(1,len,actx.sampleRate),data=b.getChannelData(0);
+    for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*(1-i/len);
+    const s=actx.createBufferSource(),g=actx.createGain(),f=actx.createBiquadFilter();
+    f.type='lowpass';f.frequency.value=900;g.gain.value=v;
+    s.buffer=b;s.connect(f).connect(g).connect(actx.destination);s.start();
+  }catch(e){}
+}
+const SFX={
+  cast(){tone(900,.25,'sine',.06,-600);},
+  splash(){noise(.3,.18);},
+  nibble(){tone(300,.05,'triangle',.08);},
+  bite(){tone(520,.12,'square',.1);setTimeout(()=>tone(780,.15,'square',.1),90);},
+  hook(){tone(200,.12,'sawtooth',.12,300);},
+  reel(){ // треск катушки-трещотки
+    if(save.muted)return;
+    try{
+      if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
+      if(!window._clickBuf){const n=Math.floor(actx.sampleRate*0.012),b=actx.createBuffer(1,n,actx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);window._clickBuf=b;}
+      const src=actx.createBufferSource(),f=actx.createBiquadFilter(),g=actx.createGain();
+      src.buffer=window._clickBuf;f.type='bandpass';f.frequency.value=2200+Math.random()*900;f.Q.value=4;
+      g.gain.value=.35;src.playbackRate.value=.9+Math.random()*.2;
+      src.connect(f).connect(g).connect(actx.destination);src.start();
+    }catch(e){}
+  },
+  snap(){tone(1200,.3,'sawtooth',.15,-1100);noise(.15,.1);},
+  win(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.15,'triangle',.12),i*90));},
+  coin(){tone(1200,.06,'square',.06);setTimeout(()=>tone(1600,.1,'square',.06),60);},
+  fail(){tone(300,.3,'triangle',.12,-150);},
+  whoosh(pw){if(save.muted)return;try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();const d=.35+pw*.3,n=Math.floor(actx.sampleRate*d),b=actx.createBuffer(1,n,actx.sampleRate),c=b.getChannelData(0);for(let i=0;i<n;i++)c[i]=(Math.random()*2-1)*Math.sin(Math.PI*i/n);const s=actx.createBufferSource(),f=actx.createBiquadFilter(),g=actx.createGain();s.buffer=b;f.type='bandpass';f.Q.value=2;f.frequency.setValueAtTime(600,actx.currentTime);f.frequency.exponentialRampToValueAtTime(2500+pw*2500,actx.currentTime+d*.5);f.frequency.exponentialRampToValueAtTime(500,actx.currentTime+d);g.gain.value=.25;s.connect(f);f.connect(g);g.connect(actx.destination);s.start();}catch(e){}},
+  pff(){tone(420,.18,'triangle',.06,-200);},
+  drag(){if(save.muted)return;tone(700+Math.random()*120,.018,'square',.025);},
+  blub(){tone(260,.12,'sine',.08,-120);},
+  pop(){tone(900,.06,'sine',.12,600);setTimeout(()=>tone(1500,.08,'sine',.08),50);}
+};
+function vib(p){try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
+
+/* ===== Виды рыб =====
+   s — сила (0.15..1.6), win — окно подсечки (сек), kg — цена за кг
+   форма: обычная | shape:'flat' (камбала) | 'shark' | 'ray' (скат) | 'sword' (рыба-меч) | emoji */
+const SPECIES={
+  // пресноводные
+  plotva:{name:'Плотва',c:'#b8c3cc',fin:'#d9483b',min:.08,max:.5,s:.25,win:.95,kg:24},
+  okun:{name:'Окунь',c:'#9db54a',fin:'#e0602f',min:.1,max:1.3,s:.4,win:.85,kg:30,stripes:1},
+  karas:{name:'Карась',c:'#c9a246',fin:'#a06a2a',min:.15,max:1.6,s:.35,win:.85,kg:26,tall:1},
+  rotan:{name:'Ротан',c:'#6b5a3a',fin:'#4a3d26',min:.05,max:.4,s:.25,win:.95,kg:15,spots:1},
+  karp:{name:'Карп',c:'#a8873e',fin:'#7a5a2a',min:.5,max:6,s:.6,win:.7,kg:35,tall:1.1},
+  lesch:{name:'Лещ',c:'#a8956a',fin:'#6b5a3a',min:.5,max:4,s:.55,win:.7,kg:30,tall:1.3},
+  golavl:{name:'Голавль',c:'#8f9a7a',fin:'#c24a2a',min:.3,max:3,s:.45,win:.8,kg:32},
+  yaz:{name:'Язь',c:'#b0a06a',fin:'#d0603a',min:.3,max:3,s:.45,win:.8,kg:32},
+  zhereh:{name:'Жерех',c:'#b5bec4',fin:'#8a8f92',min:1,max:6,s:.7,win:.6,kg:40,long:1.2},
+  sudak:{name:'Судак',c:'#8e9a8f',fin:'#5f6b60',min:1,max:7,s:.75,win:.6,kg:48,stripes:1,long:1.25,rare:1},
+  schuka:{name:'Щука',c:'#5f7f3a',fin:'#a8742c',min:1,max:12,s:.9,win:.55,kg:42,spots:1,long:1.45,rare:1},
+  sterlyad:{name:'Стерлядь',c:'#8a7f6a',fin:'#5a5040',min:.5,max:4,s:.7,win:.6,kg:120,long:1.5,rare:1},
+  forel:{name:'Форель',c:'#b7a7a2',fin:'#c57a7a',min:.5,max:4,s:.6,win:.65,kg:70,spots:1},
+  amur:{name:'Белый амур',c:'#9fa07a',fin:'#6a6b4a',min:2,max:15,s:.95,win:.6,kg:30,long:1.2,rare:1},
+  tolstolob:{name:'Толстолобик',c:'#b9b7a8',fin:'#8a887a',min:3,max:20,s:.95,win:.6,kg:25,tall:1.1,rare:1},
+  som:{name:'Сом',c:'#4a4a3e',fin:'#33332a',min:5,max:60,s:1.25,win:.5,kg:28,long:1.5,whisk:1,rare:1},
+  lin:{name:'Линь',c:'#7d8a3a',fin:'#5a6528',min:.5,max:4,s:.5,win:.75,kg:45,tall:1.05},
+  zerkkarp:{name:'Зеркальный карп',c:'#c9b06a',fin:'#8a6a2a',min:2,max:20,s:.95,win:.6,kg:60,tall:1.15,gold:1},
+  koi:{name:'Карп кои',c:'#f4efe6',fin:'#e0602f',min:1,max:8,s:.75,win:.6,kg:150,koi:1},
+  osetr:{name:'Осётр',c:'#7d7a6e',fin:'#55534a',min:3,max:40,s:1.2,win:.5,kg:130,long:1.6,rare:1},
+  zkarp:{name:'ЗОЛОТОЙ КАРП',c:'#f2b51e',fin:'#e0602f',min:3,max:15,s:1.05,win:.45,kg:500,tall:1.1,gold:1,legend:1,rare:1},
+  nalim:{name:'Налим',c:'#6b6248',fin:'#4a4232',min:.5,max:6,s:.7,win:.6,kg:60,long:1.4,spots:1,whisk:1},
+  // морские
+  korushka:{name:'Корюшка',c:'#c9d6dc',fin:'#9fb0b8',min:.03,max:.2,s:.2,win:.9,kg:150,long:1.1},
+  stavrida:{name:'Ставрида',c:'#a9bfcf',fin:'#d9c44a',min:.1,max:.6,s:.35,win:.85,kg:30},
+  skumbria:{name:'Скумбрия',c:'#4f8fa8',fin:'#2f5f78',min:.2,max:1.5,s:.45,win:.8,kg:40,stripes:1},
+  seld:{name:'Сельдь',c:'#bcd3e0',fin:'#7a9aaa',min:.1,max:.6,s:.3,win:.9,kg:30},
+  kefal:{name:'Кефаль',c:'#9aa8b0',fin:'#6a7880',min:.3,max:2,s:.5,win:.75,kg:45},
+  kambala:{name:'Камбала',c:'#a08a64',fin:'#7a6a4a',min:.3,max:5,s:.55,win:.7,kg:55,shape:'flat',spots:1},
+  morokun:{name:'Морской окунь',c:'#d1503a',fin:'#a83a2a',min:.5,max:3,s:.6,win:.7,kg:70,tall:1.1},
+  treska:{name:'Треска',c:'#9c9a72',fin:'#6a684a',min:1,max:15,s:.75,win:.65,kg:50,spots:1,long:1.2},
+  krab:{name:'Краб',emoji:'🦀',min:.3,max:2,s:.4,win:.8,kg:120},
+  osminog:{name:'Осьминог',emoji:'🐙',min:1,max:10,s:.85,win:.6,kg:90,rare:1},
+  skat:{name:'Скат',c:'#7a6a5a',fin:'#5a4a3a',min:2,max:30,s:1.1,win:.55,kg:35,shape:'ray',rare:1},
+  tunec:{name:'Тунец',c:'#2d4f7a',fin:'#e0c040',min:5,max:80,s:1.4,win:.5,kg:60,long:1.3,rare:1},
+  mech:{name:'Рыба-меч',c:'#3d5a7a',fin:'#2a3f58',min:10,max:120,s:1.5,win:.45,kg:70,shape:'sword',long:1.4,rare:1},
+  akula:{name:'Акула',c:'#7d8a95',fin:'#5d6a75',min:20,max:200,s:1.6,win:.45,kg:40,shape:'shark',long:1.6,rare:1},
+  // мусор
+  sapog:{name:'Сапог Михалыча',emoji:'🥾',junk:1,min:.8,max:1.2,s:.15,win:1,kg:2},
+  banka:{name:'Банка тушёнки (пустая)',emoji:'🥫',junk:1,min:.2,max:.4,s:.12,win:1,kg:2},
+  rakushka:{name:'Ракушка с шумом моря',emoji:'🐚',junk:1,min:.1,max:.3,s:.12,win:1,kg:15}
+};
+for(const id in SPECIES)SPECIES[id].id=id;
+
+/* ===== Водоёмы ===== [id вида, частота] */
+const LOCS=[
+  {id:'pond',name:'Пруд за гаражами',ico:'🏡',cost:0,desc:'Тут рыбачил ещё Батин батя. И тоже ничего не поймал',
+   sky:['#7cc6f2','#ffe1b0'],water:['#4a8f7a','#163b35'],shore:'forest',sun:1,
+   fish:[['plotva',30],['okun',25],['karas',22],['rotan',15],['karp',6],['sapog',6]]},
+  {id:'river',name:'Река Бурная',ico:'🌊',cost:250,desc:'Течение быстрое, как Батина зарплата',
+   sky:['#8fd0f5','#e8f4ff'],water:['#3d8fb8','#0d3550'],shore:'hills',flow:1,sun:1,
+   fish:[['golavl',24],['yaz',22],['zhereh',12],['sudak',12],['schuka',12],['sterlyad',4],['som',3],['nalim',6],['banka',6]]},
+  {id:'lake',name:'Горное озеро',ico:'⛰️',cost:1200,desc:'Форель, горы и амуры размером с Батю',
+   sky:['#a5c8f0','#fbe3c8'],water:['#2f7fae','#0b2f4e'],shore:'mountains',sun:1,
+   fish:[['forel',22],['lesch',20],['karp',16],['amur',10],['tolstolob',9],['schuka',12],['som',4],['nalim',5],['sapog',5]]},
+  {id:'sea',name:'Море (без жены)',ico:'🐋',cost:4500,desc:'Акулы, тунцы и чайки-воришки. 13 видов рыбы!',
+   sky:['#5fb6ef','#d6f0ff'],water:['#1c8ac4','#062a4a'],shore:'sea',waves:1,sun:1,
+   fish:[['stavrida',20],['seld',18],['skumbria',17],['kefal',14],['kambala',13],['morokun',10],['treska',9],['krab',8],['osminog',5],['skat',4],['tunec',3],['mech',1.5],['akula',1],['korushka',8],['rakushka',5]]},
+  {id:'legend',name:'Легендарная заводь',ico:'✨',cost:14000,desc:'Здесь живёт ОН. Золотой Карп. Тсс!',
+   sky:['#f08a5a','#ffd98a'],water:['#5a4f8a','#1a1636'],shore:'mist',lilies:1,
+   fish:[['lin',24],['zerkkarp',22],['koi',18],['osetr',12],['som',10],['zkarp',8]]}
+];
+function curLoc(){return LOCS.find(l=>l.id===save.loc)||LOCS[0];}
+function allFishIds(){const a=[];LOCS.forEach(l=>l.fish.forEach(([id])=>{if(!a.includes(id))a.push(id);}));return a;}
+
+/* ===== Наживка ===== boost — кого привлекает (×mult), wm — множитель ожидания */
+const BAITS=[
+  {id:'bread',ico:'🍞',name:'Хлеб',cost:0,desc:'Батон за 30 рублей. Рыба не в восторге',boost:['plotva','karas','seld','kefal'],mult:1.6,wm:1.1,junk:1},
+  {id:'worm',ico:'🪱',name:'Червь',cost:60,desc:'Накопан под тёщиными грядками',boost:['okun','rotan','lesch','golavl','yaz','lin','forel','treska','nalim'],mult:2.2,wm:.9,junk:.8},
+  {id:'motyl',ico:'🦟',name:'Мотыль',cost:180,desc:'Мелкий, красный, очень убедительный',boost:['plotva','okun','rotan','karas','lesch','stavrida','seld','korushka'],mult:2.5,wm:.7,junk:.7},
+  {id:'corn',ico:'🌽',name:'Кукуруза',cost:400,desc:'Сладкая. Карпы сходят с ума',boost:['karp','karas','amur','tolstolob','zerkkarp','koi','lin'],mult:3,wm:.9,junk:.7},
+  {id:'oparysh',ico:'🐛',name:'Опарыш',cost:800,desc:'Выглядит мерзко, работает отлично',boost:['lesch','golavl','yaz','plotva','sterlyad','lin','forel'],mult:2.8,wm:.75,junk:.6},
+  {id:'zhivec',ico:'🐟',name:'Живец',cost:1500,desc:'Рыбка на рыбку. Хищники в восторге',boost:['schuka','sudak','som','zhereh','osetr','treska','tunec','akula'],mult:3.5,wm:1.1,junk:.5},
+  {id:'shrimp',ico:'🦐',name:'Креветка',cost:2500,desc:'Батя хотел съесть сам. Удержался',boost:['kefal','kambala','morokun','krab','osminog','skat','skumbria','stavrida'],mult:3,wm:.85,junk:.5},
+  {id:'spoon',ico:'🥄',name:'Блесна',cost:4000,desc:'Бабушкина ложка. Блестит — хищник кусает',boost:['schuka','okun','zhereh','sudak','skumbria','tunec','mech','akula'],mult:3.5,wm:.95,junk:.4},
+  {id:'dough',ico:'🥟',name:'Тесто «Бабушкино»',cost:8000,desc:'С ванилью и мёдом. Рецепт засекречен',boost:['karp','zerkkarp','koi','karas','amur','zkarp'],mult:3,wm:.8,junk:.4},
+  {id:'gold',ico:'✨',name:'Золотая мормышка',cost:15000,desc:'Для особого гостя. Сам знаешь какого',boost:['zkarp','koi','osetr','sterlyad','mech','akula'],mult:4.5,wm:1,junk:.3}
+];
+function curBait(){return BAITS.find(b=>b.id===save.curBait)||BAITS[0];}
+/* ===== Леска, крючки, поплавки ===== */
+const LINES=[
+  {id:'l10',ico:'🧵',name:'0,10 «Паутинка»',mm:'0.10',cost:0,max:1.5,shy:1.2,desc:'Рыба её не видит. Батя тоже'},
+  {id:'l20',ico:'🧵',name:'0,20 «Из хозмага»',mm:'0.20',cost:0,max:4,shy:1,desc:'Обычная. Как Батя в будни'},
+  {id:'l30',ico:'🧵',name:'0,30 «Крепыш»',mm:'0.30',cost:500,max:10,shy:.9,desc:'Держит карпа и тёщин характер'},
+  {id:'l40',ico:'🪢',name:'Плетёнка 0,40',mm:'0.40',cost:1800,max:30,shy:.85,desc:'Китайская, но честная'},
+  {id:'l60',ico:'🪢',name:'0,60 «Канат»',mm:'0.60',cost:5500,max:120,shy:.7,desc:'Акулу держит. Рыба косится'},
+  {id:'lfluo',ico:'✨',name:'Флюрокарбон «Невидимка»',mm:'FC',cost:12000,max:220,shy:1.15,desc:'Прочная и невидимая. Жене не показывать'}
+];
+const HOOKS=[
+  {id:'h16',name:'№16 «Мормышечный»',no:'16',cost:0,min:0,max:.5,desc:'Для мелочи. Сом разогнёт и не заметит'},
+  {id:'h12',name:'№12 «Гаражный»',no:'12',cost:0,min:.08,max:2,desc:'Универсал. Лежал в банке из-под кофе'},
+  {id:'h8',name:'№8 «Карповый»',no:'8',cost:300,min:.3,max:6,desc:'Для рыбы посерьёзнее'},
+  {id:'h4',name:'№4 «Хищник»',no:'4',cost:1400,min:.8,max:20,desc:'Мелочь не заглотит, щука — запросто'},
+  {id:'h10',name:'№1/0 «Морской»',no:'1/0',cost:4000,min:2,max:80,desc:'Для тунца и прочих качков'},
+  {id:'h100',name:'№10/0 «Акулий»',no:'10/0',cost:9000,min:8,max:250,desc:'Им можно пришвартовать лодку'}
+];
+const BOBBERS=[
+  {id:'b_foam',name:'Пенопласт дедовский',cost:0,win:0,sens:.8,top:'#e8352a',bot:'#fff',len:1,desc:'Вырезан ножом в 1979 году'},
+  {id:'b_feather',name:'Гусиное перо',cost:250,win:.15,sens:1.4,top:'#e8352a',bot:'#f3ead2',len:1.8,sea:-.15,desc:'Чуткий, видно каждый чих. На море болтается'},
+  {id:'b_sport',name:'Спортивный',cost:900,win:.25,sens:1.2,top:'#ff8a1e',bot:'#222',len:1.4,desc:'Как у профи из ютуба'},
+  {id:'b_glow',name:'«Светлячок»',cost:2200,win:.1,sens:1.1,top:'#7dff6a',bot:'#e8ffe0',len:1.3,glow:1,desc:'Светится ночью. Сом в шоке'},
+  {id:'b_gold',name:'Золотой',cost:10000,win:.35,sens:1.5,top:'#ffd84a',bot:'#c9952a',len:1.4,glow:1,desc:'Блестит. Рыба клюёт из уважения'}
+];
+function curLine(){return LINES.find(x=>x.id===save.curLine)||LINES[1];}
+function curHook(){return HOOKS.find(x=>x.id===save.curHook)||HOOKS[1];}
+function curBob(){return BOBBERS.find(x=>x.id===save.curBob)||BOBBERS[0];}
+
+/* ===== Время суток и активность рыбы =====
+   множители клёва: m — утро, d — день, e — вечер, n — ночь */
+const PERIODS={m:{ico:'🌅',name:'Утро'},d:{ico:'☀️',name:'День'},e:{ico:'🌇',name:'Вечер'},n:{ico:'🌙',name:'Ночь'}};
+const ACT={
+  plotva:{m:1.5,d:1,e:1.3,n:.4},okun:{m:1.2,d:1.8,e:1,n:.2},karas:{m:1.6,d:.8,e:1.4,n:.6},rotan:{m:1,d:1,e:1,n:1.3},
+  karp:{m:1.6,d:.6,e:1.2,n:1.5},lesch:{m:1,d:.6,e:1.4,n:1.8},golavl:{m:1.2,d:1.6,e:1,n:.5},yaz:{m:1.5,d:.8,e:1.5,n:.7},
+  zhereh:{m:2,d:1.3,e:1,n:.2},sudak:{m:.8,d:.4,e:1.6,n:2.5},schuka:{m:2,d:1.3,e:1,n:.3},sterlyad:{m:.8,d:.5,e:1.2,n:2},
+  forel:{m:2,d:.8,e:1.3,n:.4},amur:{m:1,d:1.8,e:1,n:.5},tolstolob:{m:.8,d:1.8,e:1,n:.5},som:{m:.6,d:.2,e:1.3,n:3},
+  lin:{m:1.8,d:.7,e:1.5,n:.8},zerkkarp:{m:1.4,d:.7,e:1,n:1.6},koi:{m:1,d:1.6,e:1,n:.6},osetr:{m:.8,d:.5,e:1.2,n:2.2},
+  zkarp:{m:3,d:.6,e:1,n:.5},
+  stavrida:{m:1.2,d:1.5,e:1,n:.5},skumbria:{m:1.6,d:1.4,e:.9,n:.4},seld:{m:.8,d:.7,e:1.1,n:1.5},kefal:{m:1.1,d:1.5,e:1,n:.5},
+  kambala:{m:.8,d:.7,e:1.1,n:1.6},morokun:{m:.9,d:.9,e:1.5,n:1.1},treska:{m:.8,d:.7,e:1.1,n:1.5},krab:{m:.7,d:.5,e:1.2,n:2},
+  osminog:{m:.6,d:.4,e:1.2,n:2.2},nalim:{m:.7,d:.3,e:1.3,n:2.5},korushka:{m:1.6,d:1.2,e:1,n:.5},skat:{m:.8,d:.8,e:1.6,n:1},tunec:{m:2,d:1.5,e:.8,n:.3},mech:{m:.6,d:.5,e:1.2,n:1.8},akula:{m:.7,d:.6,e:2,n:1.5}
+};
+function gameHour(){ // по циклу дня и ночи (4 минуты = сутки)
+  const p=(gameT%240)/240;let h;
+  if(p<.45)h=8+p/.45*10;else if(p<.55)h=18+(p-.45)/.1*3;else if(p<.85)h=21+(p-.55)/.3*7;else h=4+(p-.85)/.15*4;
+  return h%24;
+}
+function period(){const h=gameHour();return h>=4&&h<10?'m':h<18&&h>=10?'d':h>=18&&h<22?'e':'n';}
+function act(id){const a=ACT[id];return (a?a[period()]:1)*sAct(id);}
+function actIcons(id){const a=ACT[id];if(!a)return 'всегда';return Object.keys(PERIODS).filter(k=>a[k]>=1.3).map(k=>PERIODS[k].ico).join(' ')||'когда попало';}
+/* ===== Времена года: 1 сезон = 2 игровых суток (8 минут) ===== */
+const SEASONS=[
+  {id:'spring',ico:'🌸',name:'Весна',msg:'Щука жирует после зимы, плотва и карась проснулись',price:1,wait:1},
+  {id:'summer',ico:'☀️',name:'Лето',msg:'Карп, амур и сом на пике. Тунец и акулы у берега',price:1,wait:.9},
+  {id:'autumn',ico:'🍂',name:'Осень',msg:'Осенний жор! Хищники нагуливают жир, жор бывает чаще',price:1.1,wait:1},
+  {id:'winter',ico:'❄️',name:'Зима',msg:'Холодно, клюёт реже — зато рыба дороже. Пошли налим и корюшка!',price:1.25,wait:1.3}
+];
+const SEASON_ACT={
+  spring:{schuka:2,plotva:1.5,karas:1.4,okun:1.3,lesch:1.2,zkarp:2,som:.5,karp:.8,amur:.6,tolstolob:.6,nalim:0,korushka:0,stavrida:1.3},
+  summer:{karp:1.8,amur:2,tolstolob:1.8,som:1.8,koi:1.5,karas:1.5,lin:1.6,zerkkarp:1.6,schuka:.7,kefal:1.4,tunec:1.5,akula:1.6,mech:1.4,zkarp:1.2,nalim:0,korushka:0},
+  autumn:{schuka:2.2,sudak:2,okun:1.8,zhereh:1.6,lesch:1.4,treska:1.5,osetr:1.4,karp:.8,amur:.7,nalim:.5,korushka:.3},
+  winter:{nalim:3,korushka:3,okun:1.4,plotva:1.2,sudak:1.3,treska:1.6,seld:1.5,karp:.3,amur:.1,tolstolob:.2,som:.1,koi:.4,karas:.4,lin:.3,akula:.4,tunec:.4,mech:.5,zkarp:.3,golavl:.6}
+};
+function seasonIdx(){return Math.floor(gameT/480)%4;}
+function season(){return SEASONS[seasonIdx()];}
+function sAct(id){const t=SEASON_ACT[season().id];return t[id]===undefined?1:t[id];}
+function seasonIcons(id){return SEASONS.filter(S=>{const v=SEASON_ACT[S.id][id];return v!==undefined&&v>=1.3;}).map(S=>S.ico).join(' ');}
+let lastSeason=null;
+let lastPeriod=null,lastClock='';
+function updClock(){
+  const h=gameHour(),hh=Math.floor(h),mm=Math.floor((h-hh)*6)*10,pd=period();
+  const S=season(),dayN=Math.floor(gameT/240)%2+1;
+  const txt=S.ico+' '+S.name+', д.'+dayN+' · '+PERIODS[pd].ico+' '+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+  if(txt!==lastClock){lastClock=txt;$('timeChip').textContent=txt;}
+  if(lastPeriod&&pd!==lastPeriod){
+    const L=curLoc(),top=L.fish.map(([id])=>id).filter(id=>!SPECIES[id].junk&&act(id)>=1.5).sort((a,b)=>act(b)-act(a)).slice(0,3).map(id=>SPECIES[id].name);
+    const head={m:'🌅 Наступило утро!',d:'☀️ Наступил день!',e:'🌇 Наступил вечер!',n:'🌙 Наступила ночь!'}[pd];
+    floatMsg(head+(top.length?' Клюют: '+top.join(', '):''),'#fff3b0',.8);
+    save.gameT=gameT;persist();
+  }
+  lastPeriod=pd;
+  if(lastSeason&&S.id!==lastSeason){toast(S.ico+' '+({spring:'Пришла весна',summer:'Наступило лето',autumn:'Наступила осень',winter:'Пришла зима'}[S.id])+'!',S.msg,4000);SFX.win();resetAmbient();ensureQuests&&ensureQuests();save.gameT=gameT;persist();}
+  lastSeason=S.id;
+}
+
+/* ===== Магазин ===== */
+const SHOP=[
+  {k:'rod', ico:'🎣',name:'Катушка', desc:'Крутится быстрее, чем Батя от тёщи',      cost:[60,180,450,1100,2600,5500,11000]},
+  {k:'line',ico:'🎋',name:'Удилище «Гибкое»',   desc:'Гасит рывки рыбы. Гнётся, но не сдаётся',     cost:[80,220,550,1300,3000,6500,13000]},
+  {k:'bait',ico:'🥣',name:'Прикормка «Секрет Михалыча»', desc:'Рыба крупнее, редкая клюёт чаще',cost:[100,280,700,1600,3500,7500,15000]}
+];
+
+/* ===== Холст ===== */
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let W,H,U,DPR,waterY,pierW,pierY;
+function resize(){
+  DPR=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+  cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+  U=Math.min(W/10,H/12);
+  waterY=H*0.44;pierW=Math.max(W*0.27,U*3.2);pierY=waterY-U*0.35;
+}
+addEventListener('resize',resize);resize();
+
+/* ===== Состояние ===== */
+// idle → cast → wait → bite → fight → (result) ; fail-состояния через msg
+let st='menu',t=0,paused=false;
+let bob={x:0,y:0,dip:0,target:0},castT=0,castFrom=null;
+let waitT=0,nibbleT=0,nibbleCd=0,biteT=0,fish=null;
+let fight={tension:0,prog:0,slack:0,pullT:0,pullCd:1,fx:0,fy:0,hold:false};
+let hint='',hintCol='#fff',hintPulse=false;
+let msgs=[],ripples=[],drops=[];
+let catchesSinceAd=0,lastAdTime=0;
+let pressing=false;
+
+let rodAng=0,aimT=0,power=0,castPower=.5,perfect=false,castDur=.7,trail=[];
+function rodTip(){
+  const hx=pierW-U*0.9,hy=pierY-U*1.15;
+  let bend=0;
+  if(st==='fight')bend=fight.tension*U*1.4+(fight.act==='run'?U*.35:0)+(fight.act==='shake'?Math.sin(gameT*32)*U*.15:0);
+  else if(st==='bite')bend=U*0.5;
+  const a=rodAng,vx=U*2.6,vy=-U*2.4,ca=Math.cos(a),sa=Math.sin(a);
+  return {hx,hy,x:hx+vx*ca-vy*sa,y:hy+vx*sa+vy*ca+bend,bend};
+}
+
+function setHint(s,c='#fff',pulse=false){hint=s;hintCol=c;hintPulse=pulse;}
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+const HINTS={
+  idle:['Зажми и отпусти — Батя закинет','Зажми — замах, отпусти — бросок','Держи для замаха, отпускай в зелёном','Зажми, прицелься, отпусти — и молись'],
+  wait:['Ждём… Тапни, чтобы перезакинуть','Тсс… Рыба подкрадывается','Поплавок, не подведи…','Терпение, Батя. Терпение'],
+  bite:['ПОДСЕКАЙ, БАТЯ!','ТЯНИ! ТЯНИ!','ДЁРГАЙ!!!','КЛЮЁТ! ЖМИ!'],
+  hold:['Крути, Батя, крути!','Тянем-потянем…','Мотаем, как пенсию копим','Крутим барабан!'],
+  rest:['Жми и держи — мотай!','Палец на экран — и мотай','Чего встал? Мотай!'],
+  tense:['ОТПУСТИ! Леска плачет!','Отпусти — порвёшь, как дедовы штаны!','ОТПУСТИ! Леска визжит!'],
+  slack:['Мотай! Леска висит, как уши!','Слабина! Рыба смеётся!','Мотай! Рыба уплывает!']
+};
+let fightMode='',fightTxt='';
+// подсказки при вываживании — фиксированные, не меняются от кликов
+// подсказки при вываживании: одна случайная на всю рыбу, от кликов не меняется
+const FIGHT_HOLD=[
+  'Держи — мотай! Красное — отпускай','Жми — мотай, покраснело — не жми','Крути, Батя! Покраснело — передохни',
+  'Держи палец, как пульт от телика','Мотай, как будто жена зовёт ужинать','Тянем-потянем! Красное — стоп-кран',
+  'Палец на экран — рыба в карман','Держи — мотай, красное — не наглей','Мотай нежно, как бабушкин клубок',
+  'Тащи! Но леска не железная','Жми и крути, как в молодости','Красное — значит, леска нервничает',
+  'Держи крепко, как зарплату','Мотай! Сковородка уже греется','Тяни, но без фанатизма',
+  'Мотай терпеливо, как пенсию копишь','Держи! Рыба тоже не сдаётся','Крутишь — ловишь, красное — отдыхаешь',
+  'Палец держи, а нервы — при себе','Мотай! Михалыч смотрит','Аккуратно, как с тёщиным сервизом',
+  'Держи — мотай, красное — дыши','Рыба тянет, ты тянешь — кто кого?','Крути барабан! Красное — «Банкрот»',
+  'Мотай, пока жена не позвонила','Держи палец! Отпустишь — уплывёт','Красное — у лески нервный срыв',
+  'Мотай, как будто ведро пустое','Отпускай, когда леска визжит','Тащи к сковородке, но не рви'];
+const FIGHT_TENSE=['ОТПУСТИ! Леска плачет!','ОТПУСТИ! Порвёшь, как дедовы штаны!','СТОЙ! Леска визжит!','ОТПУСТИ, Батя! Не жадничай!','ПАЛЕЦ ПРОЧЬ! Сейчас дзынькнет!','ТОРМОЗИ! Леска на пределе!'];
+const FIGHT_SLACK=['МОТАЙ! Рыба смеётся!','МОТАЙ! Леска висит, как уши!','МОТАЙ! Рыба сбегает!','НЕ СПИ! МОТАЙ!','МОТАЙ! Рыба уже пакует чемодан!'];
+let fightSet=null;
+function newFightSet(){fightSet={hold:rnd(FIGHT_HOLD),tense:rnd(FIGHT_TENSE),slack:rnd(FIGHT_SLACK)};}
+function fightHint(mode,c,pulse){if(!fightSet)newFightSet();setHint(fightSet[mode],c,pulse);}
+function floatMsg(s,c='#fff',size=1,x,y){msgs.push({s,c,size,life:1.6,x:x??null,y:y??waterY-U*1.8});}
+function ripple(x,y,big=1){ripples.push({x,y,r:U*.15,life:1,big});}
+function splashDrops(x,y,n=10){for(let i=0;i<n;i++){const a=-Math.PI*(0.15+Math.random()*0.7);const s=U*(2+Math.random()*3);drops.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.7});}}
+
+function toIdle(){st='idle';fish=null;appr=null;bob.dip=0;setHint(rnd(HINTS.idle));}
+
+/* ===== Выбор рыбы ===== */
+function pickFish(pw=.5){
+  const bait=save.bait,loc=curLoc();
+  let total=0;
+  const B=curBait();
+  const ws=loc.fish.map(([id,r])=>{const sp=SPECIES[id];let w=r;if(sp.rare)w*=1+bait*0.4;if(sp.junk)w*=Math.max(.25,1-bait*.12)*B.junk;if(B.boost.includes(id))w*=B.mult;w*=act(id);total+=w;return w;});
+  let r=Math.random()*total,sp=SPECIES[loc.fish[0][0]];
+  for(let i=0;i<ws.length;i++){r-=ws[i];if(r<=0){sp=SPECIES[loc.fish[i][0]];break;}}
+  const skew=Math.max(1.1,2.4-bait*0.2-pw*0.5); // наживка смещает к крупным
+  const w=sp.min+(sp.max-sp.min)*Math.pow(Math.random(),skew);
+  const wn=(w-sp.min)/(sp.max-sp.min);
+  return {sp,w:Math.round(w*100)/100,str:sp.s*(0.8+wn*0.5),win:sp.win};
+}
+
+/* ===== Атмосфера: день/ночь, подводный мир, пузыри ===== */
+let waitT0=1,appr=null,gameT=0;
+let ambFish=[],bubbles=[],gBubbles=[],gbCd=6,flies=[],stars=[];
+for(let i=0;i<60;i++)stars.push({x:Math.random(),y:Math.random()*0.9,p:Math.random()*6});
+function dayNight(){ // n: 0 — день, 1 — ночь; цикл 4 минуты
+  const p=(gameT%240)/240;
+  if(p<.45)return {n:0,sun:0};
+  if(p<.55)return {n:(p-.45)/.1,sun:1-Math.abs(p-.5)/.05};
+  if(p<.85)return {n:1,sun:0};
+  return {n:1-(p-.85)/.15,sun:Math.max(0,1-Math.abs(p-.92)/.07)*.6};
+}
+/* рыбное место: круги на воде, прыгающая рыба. Закинул туда — клюёт, мимо — тишина */
+let spot={x:0,r:0,t:0},jumps=[],jumpCd=4,quietT=0;
+function castRange(){const x0=pierW-U*0.9+U*2.6;return {x0,range:Math.max(U*2,W-x0-U*1.6)};}
+function newSpot(msg){
+  const {x0,range}=castRange();
+  spot.r=Math.max(U*0.4,range*(0.08+Math.random()*0.05));
+  spot.x=x0+U*1.0+range*(0.15+Math.random()*0.8);
+  spot.x=Math.min(W-U*0.8,spot.x);
+  spot.t=35+Math.random()*30;
+  if(msg)floatMsg(rnd(['🐟 Рыба ушла на новое место','🐟 Круги на воде в другом месте!','🐟 Стая переплыла. Ищи круги']),'#cfe9ff',.8);
+}
+function inSpot(x){return Math.abs(x-spot.x)<spot.r;}
+function spotPower(){const {x0,range}=castRange();return [(spot.x-spot.r-x0-U)/range,(spot.x+spot.r-x0-U)/range];}
+function resetAmbient(){
+  newSpot(false);jumps=[];
+  ambFish=[];const L=curLoc();
+  let ids=L.fish.map(f=>f[0]).filter(id=>!SPECIES[id].junk&&!SPECIES[id].legend&&!SPECIES[id].emoji&&sAct(id)>=.5);if(!ids.length)ids=['plotva'];
+  for(let i=0;i<7;i++){const sp=SPECIES[rnd(ids)],d=Math.random();
+    ambFish.push({sp,x:Math.random()*W,y:waterY+U*(1.4+d*5),d,dir:Math.random()<.5?-1:1,v:U*(0.3+Math.random()*0.5),len:U*(0.5+Math.random()*0.7)*(sp.long||1),ph:Math.random()*6});}
+  flies=[];for(let i=0;i<2;i++)flies.push({x:Math.random()*W,y:waterY-U,ph:Math.random()*6,v:U*(0.8+Math.random())});
+}
+function updAmbient(dt){
+  gameT+=dt;updClock();updSeasonFx(dt);
+  ambFish.forEach((f,i)=>{
+    f.ph+=dt;
+    if(i<4){ // стая кружит в рыбном месте
+      const tx=spot.x+Math.sin(f.ph*0.5+i*1.7)*spot.r*1.3,old=f.x;
+      f.x+=(tx-f.x)*Math.min(1,dt*0.6);if(Math.abs(f.x-old)>0.2)f.dir=f.x>old?1:-1;
+      f.y+=((waterY+U*(1.2+i*0.5)+Math.sin(f.ph)*U*0.3)-f.y)*Math.min(1,dt*0.5);
+    }else{
+      f.x+=f.dir*f.v*dt*(0.7+0.3*Math.sin(f.ph*0.7));f.y+=Math.sin(f.ph*0.9)*U*0.08*dt;
+      if((f.x<-U*2&&f.dir<0)||(f.x>W+U*2&&f.dir>0))f.dir*=-1;
+    }
+  });
+  // признаки рыбы: круги и прыжки
+  spot.t-=dt;if(spot.t<=0&&st!=='fight'&&st!=='bite')newSpot(true);
+  if(Math.random()<dt*1.6)ripple(spot.x+(Math.random()-.5)*spot.r*1.6,waterY,.35+Math.random()*.4);
+  jumpCd-=dt;if(jumpCd<=0){jumpCd=5+Math.random()*6;const ids=curLoc().fish.map(f=>f[0]).filter(id=>!SPECIES[id].junk&&!SPECIES[id].legend&&!SPECIES[id].emoji);
+    jumps.push({x:spot.x+(Math.random()-.5)*spot.r,t:0,dir:Math.random()<.5?-1:1,sp:SPECIES[rnd(ids)],len:U*(0.6+Math.random()*0.5)});}
+  for(let i=jumps.length-1;i>=0;i--){const j=jumps[i];const pt=j.t;j.t+=dt/0.9;if(pt<.05&&j.t>=.05){ripple(j.x,waterY,.8);}if(j.t>=1){ripple(j.x+j.dir*U*0.8,waterY,1);splashDrops(j.x+j.dir*U*0.8,waterY,5);SFX.splash&&Math.random()<.5&&SFX.blub();jumps.splice(i,1);}}
+  if(Math.random()<dt*2.5)bubbles.push({x:pierW+Math.random()*(W-pierW),y:H+5,r:U*(0.04+Math.random()*0.07),v:U*(0.6+Math.random()),ph:Math.random()*6});
+  for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];b.y-=b.v*dt;b.ph+=dt*3;if(b.y<waterY+U*0.1)bubbles.splice(i,1);}
+  // золотые пузыри — можно лопать ради монет
+  if(st==='idle'||st==='wait'||st==='bite'){gbCd-=dt;if(gbCd<=0&&gBubbles.length<2){gbCd=7+Math.random()*7;gBubbles.push({x:pierW+U+Math.random()*Math.max(U,W-pierW-U*2),y:H+U,r:U*0.34,v:U*(0.45+Math.random()*0.3),ph:Math.random()*6});}}
+  for(let i=gBubbles.length-1;i>=0;i--){const b=gBubbles[i];b.y-=b.v*dt;b.ph+=dt;b.x+=Math.sin(b.ph*1.5)*U*0.2*dt;if(b.y<waterY+U*0.2){gBubbles.splice(i,1);ripple(b.x,waterY,.5);}}
+  for(const f of flies){f.ph+=dt;f.x+=Math.cos(f.ph*0.6)*f.v*dt;f.y=waterY-U*(1.1+0.6*Math.sin(f.ph*0.9))+Math.sin(f.ph*7)*U*0.05;if(f.x<-U)f.x=W+U;if(f.x>W+U)f.x=-U;}
+  // рыба подплывает к крючку, кружит, пробует, хватает
+  if(appr&&!appr.junk&&(st==='wait'||st==='bite')){
+    const hookX=bob.x,hookY=waterY+U*1.3;
+    let tx,ty,sp=1.6;
+    if(appr.phase==='come'){const e=Math.min(1,appr.t/appr.dur),circ=(1-e)*U*1.4;
+      tx=hookX-appr.dir*appr.len*0.48+Math.sin(gameT*1.3)*circ;ty=hookY+Math.cos(gameT*1.1)*circ*0.5;}
+    else if(appr.phase==='sniff'){tx=hookX-appr.dir*appr.len*(0.42-(nibbleT>0?0.08:0))+Math.sin(gameT*3)*U*0.05;ty=hookY+Math.sin(gameT*2)*U*0.05;sp=4;}
+    else if(appr.phase==='bite'){tx=hookX-appr.dir*appr.len*0.38;ty=hookY;sp=10;}
+    else{tx=hookX+appr.dir*U*8;ty=hookY+U*0.8;sp=1.2;appr.a=Math.max(0,appr.a-dt*0.45);}
+    appr.x+=(tx-appr.x)*Math.min(1,dt*sp);appr.y+=(ty-appr.y)*Math.min(1,dt*1.6);
+    if(appr.phase==='come'){const want=Math.sign(tx-appr.x);if(Math.abs(tx-appr.x)>U*0.6&&want)appr.dir=want;}
+    if(appr.phase!=='leave')appr.a=Math.min(1,appr.a+dt*0.8);
+  }
+}
+function tapGold(x,y){
+  for(let i=0;i<gBubbles.length;i++){const b=gBubbles[i];
+    if(Math.hypot(x-b.x,y-b.y)<b.r*1.7){gBubbles.splice(i,1);
+      const n=Math.round((3+save.lvl*2)*(1+locIdx()));save.coins+=n;persist();updCoins();
+      floatMsg('+'+n+' 🪙','#ffe14a',1,b.x,b.y);SFX.pop();
+      for(let k=0;k<8;k++)drops.push({x:b.x,y:b.y,vx:(Math.random()-.5)*U*3,vy:-Math.random()*U*3,life:.5});
+      return true;}}
+  return false;
+}
+function drawSkyFx(){
+  const dn=dayNight();
+  if(dn.sun>0){ctx.fillStyle='rgba(255,110,50,'+(dn.sun*0.35)+')';ctx.fillRect(0,0,W,waterY);}
+  if(dn.n>0){
+    ctx.fillStyle='rgba(10,15,45,'+(dn.n*0.62)+')';ctx.fillRect(0,0,W,waterY);
+    for(const s of stars){const a=dn.n*(0.5+0.5*Math.sin(gameT*2+s.p));ctx.fillStyle='rgba(255,255,230,'+a+')';ctx.fillRect(s.x*W,s.y*waterY*0.85,2,2);}
+    ctx.fillStyle='rgba(250,245,220,'+dn.n+')';ctx.beginPath();ctx.arc(W*0.22,waterY*0.25,U*0.55,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(14,20,52,'+dn.n+')';ctx.beginPath();ctx.arc(W*0.22+U*0.22,waterY*0.25-U*0.1,U*0.48,0,Math.PI*2);ctx.fill();
+  }
+}
+function drawUnderwater(){
+  const dn=dayNight();
+  // солнечные лучи сквозь воду
+  ctx.save();ctx.globalCompositeOperation='lighter';
+  for(let i=0;i<5;i++){const x=W*(0.15+i*0.2)+Math.sin(gameT*0.3+i)*U*0.8,a=(0.05+0.04*Math.sin(gameT*0.7+i*2))*(1-dn.n*0.8);
+    const g=ctx.createLinearGradient(0,waterY,0,H);g.addColorStop(0,'rgba(255,255,220,'+a+')');g.addColorStop(1,'rgba(255,255,220,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x-U*0.3,waterY);ctx.lineTo(x+U*0.3,waterY);ctx.lineTo(x+U*1.6,H);ctx.lineTo(x+U*0.2,H);ctx.fill();}
+  ctx.restore();
+  // фоновые рыбы
+  for(const f of ambFish){ctx.save();ctx.globalAlpha=(0.38-f.d*0.24)*(1-dn.n*0.5);drawFish(ctx,f.x,f.y,f.len*(1-f.d*0.35),f.sp,f.dir);ctx.restore();}
+  // пузырьки
+  ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=1;
+  for(const b of bubbles){ctx.beginPath();ctx.arc(b.x+Math.sin(b.ph)*U*0.05,b.y,b.r,0,Math.PI*2);ctx.stroke();}
+  // золотые пузыри
+  for(const b of gBubbles){const pulse=1+0.08*Math.sin(gameT*6+b.ph);
+    const g=ctx.createRadialGradient(b.x-b.r*0.3,b.y-b.r*0.3,b.r*0.1,b.x,b.y,b.r*pulse);g.addColorStop(0,'rgba(255,255,220,.95)');g.addColorStop(0.5,'rgba(255,210,60,.75)');g.addColorStop(1,'rgba(255,170,0,.25)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(b.x,b.y,b.r*pulse,0,Math.PI*2);ctx.fill();
+    ctx.font=(b.r*0.9)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🪙',b.x,b.y+1);}
+  // крючок с наживкой и рыба, которая к нему подбирается
+  if(st==='wait'||st==='bite'){
+    const hx=bob.x,hy=waterY+U*1.3+bob.dip*0.5;
+    ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(hx,waterY+bob.dip);ctx.lineTo(hx,hy);ctx.stroke();
+    ctx.strokeStyle='#ccc';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(hx+U*0.06,hy,U*0.08,Math.PI*0.2,Math.PI*1.1);ctx.stroke();
+    ctx.font=(U*0.3)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(curBait().ico,hx,hy+U*0.12);
+    if(appr&&!appr.junk){ctx.save();ctx.globalAlpha=appr.a*0.85;drawFish(ctx,appr.x,appr.y,appr.len,appr.cand.sp,appr.dir);ctx.restore();
+      if(appr.phase==='leave'&&appr.emote&&appr.t<1.8){
+        const fs=Math.max(12,U*0.32);ctx.font='bold '+fs+'px "Trebuchet MS",Arial';const tw=ctx.measureText(appr.emote).width;
+        const ex=Math.max(tw/2+8,Math.min(W-tw/2-8,appr.x)),ey=appr.y-appr.len*0.35-fs;
+        ctx.globalAlpha=Math.min(1,(1.8-appr.t)*2);ctx.fillStyle='rgba(255,255,255,.92)';roundRect(ex-tw/2-7,ey-fs*0.75,tw+14,fs*1.5,8);ctx.fill();
+        ctx.fillStyle='#4a2a10';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(appr.emote,ex,ey);ctx.globalAlpha=1;}}
+  }
+  if(dn.n>0){ctx.fillStyle='rgba(5,10,35,'+(dn.n*0.45)+')';ctx.fillRect(0,waterY,W,H-waterY);}
+}
+function drawNightFx(){
+  const dn=dayNight();if(dn.n<=0.05)return;
+  for(let i=0;i<10;i++){const x=((i*W/10+Math.sin(gameT*0.4+i)*U*1.5)%W+W)%W,y=waterY-U*(0.4+Math.abs(Math.sin(gameT*0.3+i*1.7))*1.6),a=dn.n*(0.4+0.6*Math.max(0,Math.sin(gameT*2+i*3)));
+    const g=ctx.createRadialGradient(x,y,0,x,y,U*0.25);g.addColorStop(0,'rgba(220,255,120,'+a+')');g.addColorStop(1,'rgba(220,255,120,0)');ctx.fillStyle=g;ctx.fillRect(x-U*0.25,y-U*0.25,U*0.5,U*0.5);}
+  if(st!=='menu'){const bx=st==='fight'?fight.fx:bob.x,by=st==='fight'?waterY:bob.y+bob.dip;
+    const g=ctx.createRadialGradient(bx,by-U*0.2,0,bx,by-U*0.2,U*0.9);g.addColorStop(0,'rgba(120,255,140,'+(dn.n*(curBob().glow?0.6:0.12))+')');g.addColorStop(1,'rgba(120,255,140,0)');ctx.fillStyle=g;ctx.fillRect(bx-U,by-U*1.2,U*2,U*2);}
+}
+let fallP=[];
+function updSeasonFx(dt){
+  const id=season().id,rate={spring:3,summer:0,autumn:4,winter:14}[id];
+  if(Math.random()<dt*rate)fallP.push({x:Math.random()*W*1.1,y:-10,vy:U*(id==='winter'?0.8:1.1)*(0.6+Math.random()*0.6),ph:Math.random()*6,r:U*(id==='winter'?0.05+Math.random()*0.05:0.1+Math.random()*0.06),k:id,c:id==='autumn'?rnd(['#e0802a','#c9452a','#e8b33a']):'#ffc6dc'});
+  for(let i=fallP.length-1;i>=0;i--){const p=fallP[i];p.ph+=dt;p.y+=p.vy*dt;p.x+=Math.sin(p.ph*1.5)*U*0.4*dt-U*0.15*dt;if(p.y>waterY+U*0.1||p.k!==id){if(p.y>waterY&&p.k!=='winter'&&Math.random()<.3)ripple(p.x,waterY,.3);fallP.splice(i,1);}}
+}
+function drawSeasonFx(){
+  const id=season().id;
+  if(id==='winter'){ctx.fillStyle='rgba(225,235,245,.22)';ctx.fillRect(0,0,W,waterY);}
+  if(id==='autumn'){ctx.fillStyle='rgba(255,170,80,.08)';ctx.fillRect(0,0,W,waterY);}
+  for(const p of fallP){
+    if(p.k==='winter'){ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();}
+    else{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.sin(p.ph*2)*1.2);ctx.fillStyle=p.c;ctx.beginPath();ctx.ellipse(0,0,p.r,p.r*0.55,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+  }
+}
+function drawIce(){
+  if(season().id!=='winter'||save.loc==='sea')return;
+  ctx.fillStyle='rgba(190,215,235,.25)';ctx.fillRect(0,waterY,W,U*0.5);
+  for(let i=0;i<6;i++){const x=((i*W/6+gameT*U*0.05)%(W+U*2))-U,w=U*(0.8+(i%3)*0.4);
+    ctx.fillStyle='rgba(240,248,255,.85)';ctx.beginPath();ctx.ellipse(x,waterY+U*0.05,w,U*0.08,0,0,Math.PI*2);ctx.fill();}
+}
+function drawJumps(){for(const j of jumps){const x=j.x+j.dir*U*0.8*j.t,y=waterY-Math.sin(j.t*Math.PI)*U*1.1;ctx.save();ctx.translate(x,y);ctx.rotate(j.dir*(j.t-0.5)*1.6);drawFish(ctx,0,0,j.len,j.sp,j.dir);ctx.restore();}}
+function drawFlies(){
+  if(dayNight().n>0.7||season().id==='winter'||season().id==='autumn')return;
+  for(const f of flies){const w=Math.abs(Math.sin(gameT*40))*U*0.06,d=Math.cos(f.ph*0.6)>0?1:-1;
+    ctx.fillStyle='rgba(200,230,255,.65)';ctx.beginPath();ctx.ellipse(f.x,f.y-w,U*0.17,U*0.05,-0.5*d,0,Math.PI*2);ctx.ellipse(f.x+U*0.05*d,f.y-w,U*0.17,U*0.05,0.5*d,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#2a7ab8';ctx.lineWidth=U*0.06;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(f.x-U*0.3*d,f.y);ctx.lineTo(f.x+U*0.15*d,f.y);ctx.stroke();}
+}
+
+/* ===== Музыка: спокойная генеративная гитара + пэд + шум воды ===== */
+const Music={
+  started:false,
+  midi(m){return 440*Math.pow(2,(m-69)/12);},
+  start(){
+    if(this.started||!save.music)return;
+    try{
+      if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
+      if(actx.state==='suspended')actx.resume();
+      this.master=actx.createGain();this.master.gain.setValueAtTime(0,actx.currentTime);this.master.gain.linearRampToValueAtTime(.9,actx.currentTime+3);
+      this.master.connect(actx.destination);
+      this.delay=actx.createDelay();this.delay.delayTime.value=.42;
+      const fb=actx.createGain();fb.gain.value=.33;const lp=actx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1800;
+      this.delay.connect(lp);lp.connect(fb);fb.connect(this.delay);lp.connect(this.master);
+      // тихий шум воды
+      const len=actx.sampleRate*3,b=actx.createBuffer(1,len,actx.sampleRate),d=b.getChannelData(0);let last=0;
+      for(let i=0;i<len;i++){last=(last+0.02*(Math.random()*2-1))/1.02;d[i]=last*3.5;}
+      const src=actx.createBufferSource();src.buffer=b;src.loop=true;const wf=actx.createBiquadFilter();wf.type='lowpass';wf.frequency.value=500;
+      this.water=actx.createGain();this.water.gain.value=.05;src.connect(wf);wf.connect(this.water);this.water.connect(this.master);src.start();this.src=src;
+      this.next=actx.currentTime+.2;this.step=0;this.mel=4;
+      this.timer=setInterval(()=>this.schedule(),120);
+      this.started=true;
+    }catch(e){}
+  },
+  stop(){
+    if(!this.started)return;
+    try{this.master.gain.cancelScheduledValues(actx.currentTime);this.master.gain.setValueAtTime(this.master.gain.value,actx.currentTime);this.master.gain.linearRampToValueAtTime(0,actx.currentTime+.5);clearInterval(this.timer);const s=this.src,m=this.master;setTimeout(()=>{try{s.stop();m.disconnect();}catch(e){}},700);}catch(e){}
+    this.started=false;
+  },
+  schedule(){
+    if(!actx||paused)return;
+    const beat=60/(zhorT>0?118:(season().id==='winter'?84:season().id==='summer'?104:96))/2;
+    if(this.next<actx.currentTime)this.next=actx.currentTime+.05;
+    while(this.next<actx.currentTime+0.5){this.play(this.step,this.next,beat);this.next+=beat;this.step++;}
+  },
+  root(){return {pond:55,river:57,lake:52,sea:53,legend:50}[save.loc]||55;},
+  cache:{},
+  // гитарная струна (алгоритм Карплуса-Стронга)
+  ks(m){
+    const key=m|0;if(this.cache[key])return this.cache[key];
+    const sr=actx.sampleRate,f=this.midi(key),N=Math.max(2,Math.round(sr/f)),len=Math.floor(sr*1.8);
+    const b=actx.createBuffer(1,len,sr),d=b.getChannelData(0),ring=new Float32Array(N);
+    let prev=0;for(let i=0;i<N;i++){const r=Math.random()*2-1;ring[i]=(r+prev)*0.5;prev=r;}
+    const damp=key>64?0.993:0.996;let idx=0;
+    for(let i=0;i<len;i++){const v=ring[idx],nx=ring[(idx+1)%N];ring[idx]=(v+nx)*0.5*damp;d[i]=v;idx=(idx+1)%N;}
+    return this.cache[key]=b;
+  },
+  string(m,time,v,toDelay=.15){
+    const s=actx.createBufferSource(),g=actx.createGain();s.buffer=this.ks(m);g.gain.value=v;
+    s.connect(g);g.connect(this.master);
+    if(toDelay){const gd=actx.createGain();gd.gain.value=toDelay;g.connect(gd);gd.connect(this.delay);}
+    s.start(time);s.stop(time+1.8);
+  },
+  strum(notes,time,v,up){const ord=up?[...notes].reverse():notes;ord.forEach((n,i)=>this.string(n,time+i*0.014,v*(1-i*0.08)));},
+  whistle(m,time,dur,v){
+    const o=actx.createOscillator(),g=actx.createGain(),l=actx.createOscillator(),lg=actx.createGain();
+    o.type='sine';o.frequency.value=this.midi(m);l.frequency.value=5.5;lg.gain.value=12;l.connect(lg);lg.connect(o.detune);
+    g.gain.setValueAtTime(0,time);g.gain.linearRampToValueAtTime(v,time+.035);g.gain.setValueAtTime(v,time+dur*.7);g.gain.linearRampToValueAtTime(0,time+dur);
+    o.connect(g);g.connect(this.master);const gd=actx.createGain();gd.gain.value=.25;g.connect(gd);gd.connect(this.delay);
+    o.start(time);l.start(time);o.stop(time+dur+.05);l.stop(time+dur+.05);
+  },
+  shaker(time,v){
+    if(!this.nb){const n=Math.floor(actx.sampleRate*.04),b=actx.createBuffer(1,n,actx.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);this.nb=b;}
+    const s=actx.createBufferSource(),f=actx.createBiquadFilter(),g=actx.createGain();s.buffer=this.nb;f.type='highpass';f.frequency.value=6000;g.gain.value=v;
+    s.connect(f);f.connect(g);g.connect(this.master);s.start(time);
+  },
+  newMotif(){
+    const rh=[[1,0,1,0,1,1,0,0,1,0,1,0,2,0,0,0],[1,1,1,0,1,0,1,0,1,0,0,1,2,0,0,0],[0,0,1,1,1,0,1,0,1,1,1,0,2,0,0,0],[1,0,0,1,1,0,1,1,1,0,1,0,2,0,0,0]];
+    const r=rnd(rh);let deg=2+Math.floor(Math.random()*3);
+    return r.map(x=>{if(!x)return null;deg=Math.max(0,Math.min(8,deg+rnd([-2,-1,-1,0,1,1,2])));return {deg,long:x===2};});
+  },
+  // весёлый кантри-фолк: бас «бум», гитара «ча», насвистывание мелодии
+  play(step,time,beat){
+    const night=dayNight().n,r=this.root();
+    const CH={I:[0,4,7],IV:[5,9,12],V:[7,11,14],vi:[9,12,16]};
+    const prog=['I','IV','I','V','I','vi','IV','V'];
+    const bar=Math.floor(step/8),pos=step%8,ch=CH[prog[bar%8]];
+    if(bar%16===0&&pos===0||!this.mA){this.mA=this.newMotif();this.mB=this.newMotif();}
+    const vv=night>0.5?.6:1;
+    // бас
+    if(pos===0)this.string(r+ch[0]-12,time,.55*vv,0);
+    if(pos===4)this.string(r+ch[0]-12+(ch[0]===0?7:-5),time,.45*vv,0);
+    // гитара
+    const voic=ch.map(n=>r+n).concat([r+ch[0]+12]);
+    if(pos===2||pos===6)this.strum(voic,time,.16*vv,false);
+    if(pos===7)this.strum(voic.slice(1),time,.08*vv,true);
+    // шейкер (во время жора громче)
+    if(zhorT>0||pos%2===1)this.shaker(time,(zhorT>0?.06:.025)*vv);
+    // мелодия-свист: A A B A
+    if(night<0.5){
+      const part=[this.mA,this.mA,this.mB,this.mA][Math.floor(bar/2)%4],n=part[(bar%2)*8+pos];
+      if(n){const scale=[0,2,4,7,9,12,14,16,19];this.whistle(r+12+scale[n.deg],time,n.long?beat*3:beat*1.4,.045);}
+    }
+  }
+};
+
+
+/* ===== Фразы Бати ===== */
+const PHRASES={
+  cast:['Ну, с богом!','Щас батя покажет класс','Рыба, я иду!','Эх, хорошо пошла!','Главное — чтоб жена не позвонила','Учись, пока я живой','Бросок мастера! Почти','Лети, родимая!','Опа! Прямо в рыбу','Так закидывал ещё мой дед. Он тоже ничего не ловил','Внимание, рыба! Это не учения','Красиво закинул, жаль никто не снимал','Куда-то туда… да, туда','Этот заброс войдёт в историю','Поплавок, не подведи!','Червяк, ты знаешь, что делать','Ловись, рыбка, большая и маленькая. Лучше большая','Сегодня мой день! Наверное'],
+  wait:['Тишина… как я люблю','Рыба, ты где? Я ж прикормил!','Вот в прошлом году тут ТАКОЙ клёв был…','Не шуми, рыбу распугаешь','Главное — терпение. И термос','Клюёт… показалось','Рыба думает. Я тоже думаю','Может, червяк невкусный?','Рыба на обеде, видимо','Чую, сейчас будет','Поплавок, ну дёрнись, ну пожалуйста','Кто-то там есть. Я знаю','Рыба тоже на часик ушла','Сижу, как на совещании. Только приятнее','Если не клюнет — значит, рыба на диете','Скоро-скоро… Ну, скоро же?'],
+  early:['Это я снасть проверял!','Тренировочная подсечка!','Это я рыбу пугал. Специально','Рука сама дёрнулась…','Я просто размял руку','Так было задумано','Комар укусил. Вот и дёрнул','Это был манёвр для отвода глаз','Рыба просто понюхала. Наглая','Поспешишь — рыбу насмешишь'],
+  bite:['ОПА!','ЕСТЬ!','КЛЮЁТ!!!','Тихо! Тихо… ТЯНИ!','Вот она, родимая!','Батя, не спи!'],
+  miss:['Да она сама с крючка сошла!','Ушла… зато я её видел!','Ничего, она ещё вернётся','Эх, была на кило, не меньше!','Это ветер виноват','Червяка съела и ушла. Хамка','Я поддавался','Рыба-ниндзя, не иначе','Солнце в глаза светило!','Дам ей фору. Пусть растёт','Кто-нибудь видел? Нет? Тогда и не было','Она меня обманула. Женщина…'],
+  snap:['Вот это был сом! Кило на пятьдесят!','Леска бракованная, не иначе','Скажу мужикам, что это был кит','Ничего не было. Ты ничего не видел','Эх… мою леску ещё дед покупал','Это была подводная лодка','Крокодил, точно крокодил!','Леска не выдержала моей мощи','Дзынь — и нету рыбки','Теперь у рыбы есть пирсинг','Новая леска нужна. Скажу жене — для дачи'],
+  slack:['Это я ей шанс дал','Отпустил. Пусть подрастёт','Пожалел её — у неё дети','Это была тактика. Сложная','Я задумался о вечном','Отвлёкся на чайку','Пусть плывёт, рассказывает про меня','Я в режиме «отпусти и поймай». Вторую часть пропустил'],
+  fight:['Иди к папе!','Не уйдёшь!','Крутим, крутим…','Тянем-потянем!','Ох, тяжёлая!','Только не порвись, родная','Вот это сила!','Спина, держись!','Кто кого, а?','Да ты качалась, что ли?!'],
+  small:['Мелочь, а приятно','Кошке на ужин','Малёк. Но в рассказе будет на кило','На уху не хватит, на байку — вполне','Растёт смена!','Это на развод','Аквариумная, что ли?','Это для фото. Крупным планом','Беги к маме, малой','Зато своя!','Взвешивать не будем'],
+  normal:['Вот это я понимаю!','Хороша! Вся в батю','Ну, на уху уже есть','Жена удивится. Если не скажу, что купил','Ещё штук десять — и домой','Красавица!','Нормальная такая','Вот это рыба! Наполовину','В ведро её, к подружкам','Сфоткаю — скажу, что вдвое больше','Ну что, познакомимся?','Достойно!'],
+  big:['ВОТ ЭТО ЗВЕРЬ!','Фоткай меня, фоткай!','Это в рамочку и на стену!','Мужикам расскажу — не поверят','Я же говорил — места знать надо!','Мне нужен кран!','Это не рыба, это лошадь','В ведро не влезет — пусть в ванне живёт','Тёща, подвинься, у нас новый член семьи','Руки дрожат… от гордости','Срочно в чат «Рыбаки за 50»!'],
+  record:['Новый рекорд! В гараже обзавидуются','Рекорд! Это надо обмыть… чаем','Вот это в семейный архив!','Рекорд! Звоните в газету!','Михалыч, выкуси!','Внукам расскажу. И правнукам'],
+  sapog:['Хм, сапог. Хороший, кстати, сорок пятый','Второй бы ещё — и на дачу','Опять сапог. Кто их сюда кидает?!','Это не сапог. Это трофей','Михалыч! Твой сапог!','Внутри никого? Жаль','Ботинок года','Почти рыба. По весу'],
+  banka:['Тушёнка? Пустая… эх','Банка. Сдам на металлолом','Экология, блин!','Срок годности — 1987 год','Кто-то тут обедал лучше меня'],
+  rakushka:['Ракушку дочке привезу','Красивая! Пепельница будет','Приложи к уху — там море','Жемчуга нет. Опять обманули'],
+  rare:['Да ладно?! Это же…','Батя не промах!','Такую только по телевизору видел!','Вот это удача! Значит, вечером дождь','Ущипните меня!','В журнал её, золотыми буквами','Редкая! Как Батя трезвый на свадьбе'],
+  legend:['Я ЗНАЛ! Я ВСЕГДА ЗНАЛ, ЧТО ОН ЕСТЬ!','Тридцать лет ждал! ТРИДЦАТЬ!','Теперь пусть кто-нибудь скажет, что я вру!','Жена, смотри! ЖЕНА!!!','Загадаю желание… чтоб клевало всегда'],
+  shop:['Новая снасть! Жене скажу — по скидке','Вещь! Сам бы такую ел… это про наживку','Теперь рыба не уйдёт!','Деньги — пыль. Снасти — вечны','Это не трата, это инвестиция','Чек выброшу сразу','Обнову надо обмыть. Чаем','Жена спросит — скажу, подарили'],
+  travel:['Новые места — новая рыба!','Ну, теперь серьёзная рыбалка','Жене скажу — задерживаюсь','Тут клюёт, нутром чую','Красота-то какая! Где рыба?','Местные рыбы, встречайте!'],
+  sea:['МОРЕ! Сейчас акулу вытащу!','Солёная водичка… значит, рыба солёная?','Тут, говорят, рыба-меч. Посмотрим, кто кого','Чайки, не трогайте ведро!','Море! Жаль, жена не видит. Хотя нет, хорошо'],
+  legendLoc:['Вот она… Легендарная заводь','Здесь он живёт. Я чувствую','Тихо… Карп услышит','Тридцать лет мечтал сюда попасть','Карп, выходи. Я с миром. И с червяком'],
+  idle:['Хорошо-то как…','Не отвлекай, я медитирую','Жена звонит… потом перезвоню','Сказал на часик. Прошло пять','Ну что, закидываем или как?','Комары сегодня злые…','Рыба сама себя не поймает','Солнышко… Птички… Где рыба?','Бутерброд съесть, что ли?','Может, ещё часик?','Удочка скучает','Я не сплю, я жду'],
+  wife:['📱 Жена: «Ты где?» — На совещании','📱 Жена: «Купи хлеба» — Куплю… рыбы','📱 Жена: «Скоро?» — Уже выезжаю (нет)','📱 Тёща: «Опять на рыбалке?» — Связь пропадает…','📱 Жена: «Мусор вынес?» — Вынес… удочку']
+};
+let bubble=null,idleT=0,lastPh={},sayCd=0;
+// редкие реплики: шанс + пауза между репликами
+function maybeSay(kind,chance){if(sayCd>0||Math.random()>chance)return;say(kind);sayCd=20;}
+function say(kind,force=true){
+  const arr=PHRASES[kind];if(!arr)return '';
+  let i;do{i=Math.floor(Math.random()*arr.length);}while(arr.length>1&&i===lastPh[kind]);
+  lastPh[kind]=i;
+  if(force||!bubble)bubble={txt:arr[i],life:2.8};
+  return arr[i];
+}
+function drawBubble(dt){
+  if(!bubble)return;
+  bubble.life-=dt;if(bubble.life<=0){bubble=null;return;}
+  const hx=pierW-U*1.4,hy=pierY-U*2.1;
+  ctx.font='bold '+Math.max(13,U*0.36)+'px "Trebuchet MS",Arial';
+  const maxW=Math.min(W*0.62,U*7),words=bubble.txt.split(' '),lines=[];let ln='';
+  words.forEach(w=>{const tst=ln?ln+' '+w:w;if(ctx.measureText(tst).width>maxW&&ln){lines.push(ln);ln=w;}else ln=tst;});lines.push(ln);
+  const lh=Math.max(16,U*0.45),bw=Math.max(...lines.map(l=>ctx.measureText(l).width))+U*0.6,bh=lines.length*lh+U*0.4;
+  let bx=Math.max(6,Math.min(hx-U*0.6,W-bw-6)),by=hy-bh-U*0.5;
+  if(by<120)by=120;
+  const a=Math.min(1,bubble.life*3,(2.8-bubble.life)*8);
+  ctx.globalAlpha=a;
+  ctx.fillStyle='#fff';roundRect(bx,by,bw,bh,12);ctx.fill();
+  ctx.beginPath();ctx.moveTo(hx-U*0.1,by+bh-1);ctx.lineTo(hx+U*0.3,by+bh-1);ctx.lineTo(hx,hy-U*0.15);ctx.fill();
+  ctx.fillStyle='#3b2410';ctx.textAlign='left';ctx.textBaseline='middle';
+  lines.forEach((l,i)=>ctx.fillText(l,bx+U*0.3,by+U*0.2+lh*(i+0.5)));
+  ctx.globalAlpha=1;
+}
+
+/* ===== Действия ===== */
+function startAim(){coach('aim','🎯 Замах!','Отпусти, когда указатель в зелёной зоне — там стая');st='aim';aimT=0;power=0;setHint(rnd(['Отпусти в зелёной зоне!','Замах… Отпускай в зелёном!','Ловим момент… в зелёном!']),'#fff');}
+function releaseAim(){if(st==='aim')cast(power);}
+function cast(pw){
+  st='cast';castT=0;castPower=pw;
+  castDur=.5+pw*.4;trail=[];
+  const tip=rodTip();
+  castFrom={x:tip.x,y:tip.y};
+  const cr=castRange();bob.target=Math.min(W-U*0.8,cr.x0+U*1.0+pw*cr.range);perfect=inSpot(bob.target);
+  SFX.whoosh(pw);setHint('');idleT=0;
+}
+/* ожидание: рыбы подплывают по одной, нюхают наживку и решают — брать или нет */
+const REFUSE_HOOK=['Крючок как якорь!','Я это не проглочу','Мне бы помельче','Это не крючок, а багор'];
+const REFUSE_LINE=['Вижу леску!','Канат какой-то…','Это ловушка, там верёвка!'];
+const REFUSE=['Фу!','Не моё','Пф-ф…','Хлеб? Серьёзно?','Сам ешь','Я на диете','Не сегодня','Мама не разрешает','Подозрительно…','Я веган','Это ловушка!','Мне бы кукурузки…','Фу, червяк','Хм… нет'];
+let nextApprT=0,refusals=0;
+function startWait(){
+  st='wait';fish=null;appr=null;refusals=0;
+  quietT=0;nextApprT=apprDelay();
+  coach('wait','👀 Смотри под воду','Рыба подплывёт и понюхает наживку. Не дёргай, пока поплавок не утонет');
+  setHint(rnd(HINTS.wait),'#cfe9ff');
+}
+function apprDelay(){const here=inSpot(bob.x);return season().wait*(zhorT>0?(here?.8:3)+Math.random()*2:(here?2+Math.random()*3:7+Math.random()*8))*curBait().wm;}
+function acceptChance(c){
+  const B=curBait(),liked=B.boost.includes(c.sp.id);
+  const here=inSpot(bob.x);
+  let p=liked?(here?.6:.35):(c.sp.legend?.06:(here?.18:.08));
+  p+=save.bait*.025+(zhorT>0?.25:0)+refusals*.05;
+  p*=curLine().shy;if(c.w<curHook().min)p*=.35;
+  return Math.min(.9,p);
+}
+function spawnAppr(){
+  const c=pickFish(castPower);
+  if(c.sp.junk){appr={junk:1,cand:c,phase:'come',t:0,dur:1.2+Math.random()*1.8,accept:true};return;}
+  const side=Math.random()<.5?-1:1;
+  appr={cand:c,phase:'come',t:0,dur:(1.4+Math.random()*1.6)*(zhorT>0?.5:1),accept:Math.random()<acceptChance(c),
+    x:bob.x+side*U*(3+Math.random()*2),y:waterY+U*(1.6+Math.random()*1.5),dir:-side,len:U*(0.9+Math.min(c.w,20)*0.06)*(c.sp.long||1),a:0,nibCd:.3};
+}
+function updWait(dt){
+  bob.y=waterY+Math.sin(t*2.2)*U*.04;
+  if(nibbleT>0){nibbleT-=dt;bob.dip=Math.max(0,Math.sin((0.25-nibbleT)/0.25*Math.PI))*U*.18*curBob().sens;}else bob.dip*=.8;
+  if(!appr){
+    nextApprT-=dt;quietT+=dt;
+    if(quietT>9&&!inSpot(bob.x)&&!appr){quietT=-99;setHint(rnd(['Тут тихо… Ищи круги на воде','Пусто. Перезакинь к стае','Рыба там, где круги, Батя']),'#ffd7a8');}
+    if(nextApprT<=0){if(!inSpot(bob.x)&&Math.random()<.4)nextApprT=apprDelay();else spawnAppr();}
+    return;
+  }
+  appr.t+=dt;
+  if(appr.phase==='come'&&appr.t>=appr.dur){
+    if(appr.junk){toBite(appr.cand);return;}
+    appr.phase='sniff';appr.t=0;appr.dur=.8+Math.random()*1.4;
+  }else if(appr.phase==='sniff'){
+    appr.nibCd-=dt;
+    if(appr.nibCd<=0&&appr.t<appr.dur-.2){appr.nibCd=.35+Math.random()*.45;nibbleT=.25;SFX.nibble();ripple(bob.x,waterY,.6);}
+    if(appr.t>=appr.dur){
+      if(appr.accept){toBite(appr.cand);return;}
+      appr.phase='leave';appr.t=0;appr.emote=(appr.cand.w<curHook().min&&Math.random()<.7)?rnd(REFUSE_HOOK):(curLine().shy<.86&&Math.random()<.4)?rnd(REFUSE_LINE):rnd(REFUSE);appr.dir=Math.random()<.5?-1:1;refusals++;SFX.pff();
+    }
+  }else if(appr.phase==='leave'&&appr.t>2){
+    appr=null;nextApprT=apprDelay();
+  }
+}
+function toBite(c){
+  const Bb=curBob(),nt=dayNight().n>.6;
+  fish=c;st='bite';biteT=Math.max(.3,fish.win+0.2+save.rod*0.03+Bb.win+(nt?(Bb.glow?.3:-.12):0)+(save.loc==='sea'?(Bb.sea||0):0));nibbleT=0;
+  if(appr)appr.phase='bite';
+  SFX.bite();vib([30,30,30]);ripple(bob.x,waterY,2);splashDrops(bob.x,waterY,6);
+  setHint(rnd(HINTS.bite),'#ffe14a',true);
+}
+function strike(){
+  if(st==='wait'){
+    // слишком рано
+    SFX.fail();vib(60);
+    if(!appr||appr.phase==='leave'){bob.dip=0;st='reel_in';castT=0;appr=null;setHint('Перезакидываем…','#fff');return;}
+    floatMsg(appr.phase==='sniff'?rnd(['Рано! Рыба просто нюхала','Рано! Спугнул!']):rnd(['Рано! Рыба только подплывала','Спугнул, Батя!']),'#ffb3a8');maybeSay('early',.3);appr=null;
+    bob.dip=0;st='reel_in';castT=0;
+    return;
+  }
+  if(st==='bite'){
+    SFX.hook();vib(40);
+    st='fight';
+    fight={tension:.35,prog:0,slack:0,fx:bob.x,fy:waterY+U*1.2,hold:true,sx:bob.x,reelSnd:0,act:'swim',actT:.6+Math.random()*.6,ox:0,stam:1,face:-1};
+    newFightSet();setHint(fightSet.hold,'#fff');
+    coach('fight','💪 Вываживай!','Держи палец — мотай. «Нервы лески» покраснели — отпускай');
+    if(!fish.sp.junk){if(fish.w>curLine().max)floatMsg('⚠️ Тяжёлая! Леска '+curLine().mm+' на пределе','#ffb3a8',.85);
+      else if(fish.w>curHook().max)floatMsg('⚠️ Крючок №'+curHook().no+' маловат для такой','#ffb3a8',.85);}
+  }
+}
+function escape(text,kind='miss'){
+  if(streak>=3)floatMsg('Серия '+streak+' прервана! Позор…','#ffb3a8',.9);
+  streak=0;questProgress({type:'fail'});renderQuests();
+  maybeSay(kind,kind==='snap'?.5:.3);
+  SFX.fail();vib(80);floatMsg(text,'#ffb3a8',1.1);
+  st='reel_in';castT=0;
+}
+
+/* ===== Обновление ===== */
+function update(dt){
+  t+=dt;
+  // поплавок базовая качка
+  if(sayCd>0)sayCd-=dt;
+  if(st!=='menu')tickProgress(dt);
+  if(st==='idle'){bob.x=rodTip().x;bob.y=rodTip().y+U*1.6;idleT+=dt;if(idleT>25){idleT=0;maybeSay(Math.random()<.4?'wife':'idle',1);}}
+  // удочка: замах и бросок
+  if(st==='aim'){aimT+=dt;power=1-Math.abs(((aimT*0.8)%2)-1);rodAng+=(-0.95*power-rodAng)*Math.min(1,dt*18);}
+  else if(st==='cast'){rodAng+=((castT<.25?0.45:0)-rodAng)*Math.min(1,dt*(castT<.25?30:6));}
+  else rodAng+=(0-rodAng)*Math.min(1,dt*6);
+  if(st==='aim'){const tp=rodTip();bob.x=tp.x;bob.y=tp.y+U*1.2;}
+  if(st==='cast'){
+    castT+=dt/castDur;const k=Math.min(castT,1),ke=1-Math.pow(1-k,1.6);
+    bob.x=castFrom.x+(bob.target-castFrom.x)*ke;
+    bob.y=castFrom.y+(waterY-castFrom.y)*k-Math.sin(k*Math.PI)*U*(1.8+castPower*3.2);
+    trail.push({x:bob.x,y:bob.y,l:.35});if(trail.length>14)trail.shift();
+    if(k>=1){bob.y=waterY;ripple(bob.x,waterY,1+castPower*1.5);splashDrops(bob.x,waterY,6+Math.round(castPower*10));SFX.splash();
+      if(perfect)floatMsg(rnd(['🎯 Прямо в рыбное место!','🎯 В яблочко!','🎯 Снайпер!','🎯 В самую стаю!']),'#9cf07a',1,bob.x,waterY-U*1.2);
+      else if(castPower>=.2)floatMsg(rnd(['Мимо стаи…','Тут пусто, Батя','Рыба левее… или правее']),'#ffd7a8',.8,bob.x,waterY-U*1.2);
+      else if(castPower<.2)floatMsg(rnd(['Плюх у самого берега','Недокинул…']),'#ffd7a8',.9,bob.x,waterY-U*1.2);
+      startWait();}
+  }
+  for(let i=trail.length-1;i>=0;i--){trail[i].l-=dt;if(trail[i].l<=0)trail.splice(i,1);}
+  if(st==='wait')updWait(dt);
+  if(st==='bite'){
+    biteT-=dt;
+    bob.dip=Math.min(U*.7,bob.dip+dt*U*6);
+    bob.y=waterY;
+    if(Math.random()<dt*10)ripple(bob.x+(Math.random()-.5)*U*.3,waterY,.5);
+    if(biteT<=0)escape(rnd(['Сорвалась! Рыба 1 : Батя 0','Не успел! Рыба ушла хихикая']));
+  }
+  if(st==='fight')updateFight(dt);
+  if(st==='reel_in'){
+    castT+=dt/0.5;const tip=rodTip();
+    bob.x+= (tip.x-bob.x)*Math.min(1,dt*6);
+    bob.y+= (tip.y+U*1.6-bob.y)*Math.min(1,dt*6);
+    bob.dip*=.85;
+    if(castT>=1)toIdle();
+  }
+
+  for(let i=ripples.length-1;i>=0;i--){const r=ripples[i];r.life-=dt*.9;r.r+=dt*U*1.6*r.big;if(r.life<=0)ripples.splice(i,1);}
+  for(let i=drops.length-1;i>=0;i--){const d=drops[i];d.life-=dt;d.vy+=U*14*dt;d.x+=d.vx*dt;d.y+=d.vy*dt;if(d.life<=0||d.y>waterY+U*.2)drops.splice(i,1);}
+  for(let i=msgs.length-1;i>=0;i--){const m=msgs[i];m.life-=dt;m.y-=U*.5*dt;if(m.life<=0)msgs.splice(i,1);}
+}
+
+/* ===== Вываживание: рыба плавает, рвёт в сторону, трясёт головой, прыгает и устаёт ===== */
+const JUMPY={schuka:.9,forel:1,zhereh:.8,golavl:.6,karp:.5,zerkkarp:.5,amur:.7,tolstolob:.9,kefal:.9,mech:1,tunec:.6,akula:.5,zkarp:.8,okun:.4,sudak:.3,yaz:.4,skumbria:.6,stavrida:.4,koi:.4,lin:.2,lesch:.2,som:.1,osetr:.4,sterlyad:.3,treska:.15,morokun:.2,nalim:.05,korushka:.3,seld:.3,plotva:.3,karas:.25,rotan:.1};
+function jumpy(sp){return (sp.emoji||sp.junk||sp.shape==='ray'||sp.shape==='flat')?0:(JUMPY[sp.id]??.3);}
+let shakeT=0;
+function updateFight(dt){
+  const f=fight,str=fish.str;
+  f.hold=pressing;
+  const over=fish.sp.junk?.2:fish.w/curLine().max;
+  const lineK=Math.min(2.6,.5+over*.8);
+  const tired=f.stam<.3;
+  // выбор манёвра
+  f.actT-=dt;
+  if(f.actT<=0){
+    if(f.act!=='swim'){f.act='swim';f.actT=(1.5-str*.5)*(.6+Math.random()*.8)*(tired?2:1);}
+    else{
+      const r=Math.random(),jp=jumpy(fish.sp);
+      if(jp>0&&f.prog>.12&&!tired&&r<jp*.38){
+        f.act='jump';f.actT=f.jDur=.95;f.jx0=f.fx;f.jdir=f.fx>W*.6?-1:(Math.random()<.5?-1:1);f.jumpRisk=0;f.jIn=false;
+        splashDrops(f.fx,waterY,12);ripple(f.fx,waterY,1.5);SFX.splash();vib(50);f.stam-=.06;
+        if(!f.jumpSeen){f.jumpSeen=1;floatMsg(rnd(['🐟 СВЕЧКА!','🐟 Прыжок!','🐟 Рыба взлетела!']),'#fff3b0',1);}
+      }else if(r<.78){
+        f.act='run';f.actT=(.5+Math.random()*.8*str)*(tired?.5:1);
+        f.runDir=f.ox>U*1.5?-1:f.ox<-U*1.5?1:(Math.random()<.5?-1:1);vib(40);f.stam-=.04;
+      }else{f.act='shake';f.actT=.6;vib([20,20,20,20]);}
+    }
+  }
+  let pull=0;
+  if(f.act==='run'){
+    pull=str*1.35*(tired?.5:1);
+    f.ox+=f.runDir*U*(2.2+str*2.2)*dt*(tired?.5:1);
+    f.prog-=str*.05*dt*(f.hold?1:2);
+    f.dragSnd=(f.dragSnd||0)-dt;if(f.dragSnd<=0){SFX.drag();f.dragSnd=.035;}
+  }else if(f.act==='shake'){pull=str*.8*(.5+.5*Math.sin(gameT*32));}
+  else if(f.act==='swim'){f.ox+=(Math.sin(gameT*.9)*U*.8-f.ox)*Math.min(1,dt*.4);}
+  pull/=(1+save.line*0.15);
+  // крючок может разогнуться
+  const hk=curHook();
+  if(!fish.sp.junk&&fish.w>hk.max&&pull>0&&f.tension>.55){
+    f.hookRisk=(f.hookRisk||0)+dt*Math.min(1.5,fish.w/hk.max-1)*.6;
+    if(f.hookRisk>1){SFX.snap();vib([60,40,120]);escape('🪝 Крючок №'+hk.no+' разогнулся!','snap');return;}
+  }
+  // прыжок: держишь натянутой — рыба может выплюнуть крючок
+  if(f.act==='jump'){
+    if(f.hold&&f.tension>.4){f.jumpRisk+=dt*(1.1+str);if(f.jumpRisk>.45){shakeT=.3;escape(rnd(['Сошла в прыжке! Надо было отпустить','Рыба выплюнула крючок в полёте']),'miss');return;}}
+  }
+  if(f.hold){
+    f.tension+=(0.28+str*0.32+pull)*lineK*dt*(tired?.7:1)*(f.act==='jump'?.6:1);
+    let reel=(0.13+save.rod*0.035)/(0.55+str*0.75)*(tired?1.7:1);
+    if(f.act==='run')reel*=.25;
+    const eff=f.tension<0.85?1:0.5;
+    f.prog+=reel*eff*dt;
+    f.reelSnd-=dt;if(f.reelSnd<=0){SFX.reel();f.reelSnd=.055+Math.random()*.02;}
+    f.stam-=dt*.06/(.5+str);
+  }else{
+    f.tension-=(0.55)*dt;
+    f.tension+=pull*0.35*lineK*dt;
+    f.prog-=0.03*str*dt;
+    f.stam-=dt*.015/(.5+str);
+  }
+  f.stam=Math.max(0,f.stam);
+  if(tired&&!f.tiredShown){f.tiredShown=1;floatMsg(rnd(['😮‍💨 Рыба устала! Тащи!','😮‍💨 Сдаётся! Мотай!']),'#9cf07a',.9);}
+  f.tension=Math.max(0,f.tension);f.prog=Math.max(0,f.prog);
+  // слабина
+  if(f.tension<0.08&&f.act!=='jump')f.slack+=dt;else f.slack=Math.max(0,f.slack-dt*2);
+  if(f.tension>=1){SFX.snap();vib([60,40,120]);escape('🧵 ДЗЫНЬ! Леска '+curLine().mm+' не выдержала','snap');return;}
+  if(f.slack>1.6){escape(rnd(['Рыба уплыла, помахав плавником','Слабина! Рыба ушла по-английски']),'slack');return;}
+  // позиция рыбы
+  const shoreX=pierW+U*0.6;
+  f.ox=Math.max(shoreX+U*.3-(f.sx+(shoreX-f.sx)*f.prog),Math.min(W-U*.5-(f.sx+(shoreX-f.sx)*f.prog),f.ox));
+  const baseX=f.sx+(shoreX-f.sx)*f.prog+f.ox;
+  const px=f.fx;
+  if(f.act==='jump'){
+    const k=1-f.actT/f.jDur;
+    f.fx=f.jx0+f.jdir*U*1.3*k;
+    f.fy=waterY-Math.sin(k*Math.PI)*U*(1.1+str*.9);
+    f.jk=k;
+    if(k>.9&&!f.jIn){f.jIn=true;splashDrops(f.fx,waterY,16);ripple(f.fx,waterY,2);SFX.splash();shakeT=.25;vib(60);}
+  }else{
+    f.fx+=(baseX-f.fx)*Math.min(1,dt*(f.act==='run'?5:2))+(f.act==='shake'?Math.sin(gameT*40)*U*.04:0);
+    const ty=waterY+U*(0.55+(1-f.prog)*1.8)+Math.sin(t*1.7)*U*.25;
+    f.fy+=(ty-f.fy)*Math.min(1,dt*3);
+  }
+  const vx=f.fx-px;if(Math.abs(vx)>.3)f.face=vx>0?1:-1;
+  if(Math.random()<dt*(f.prog>.6?6:3))ripple(f.fx+(Math.random()-.5)*U*.5,waterY,f.act==='run'?.8:.4);
+  if(f.act==='run'&&Math.random()<dt*4)splashDrops(f.fx,waterY,2);
+  if(f.prog>=1)landed();
+  // подсказка
+  if(f.act==='jump')setHint(rnd(['ПРЫЖОК! Отпусти палец!']),'#ff6b5a',true);
+  else if(f.tension>0.85)fightHint('tense','#ff6b5a',true);
+  else if(f.slack>0.6)fightHint('slack','#ffe14a',true);
+  else fightHint('hold','#fff',false);
+}
+
+/* ===== Развитие: уровни, задания, серия, жор ===== */
+const TITLES=['Новичок с удочкой','Кормилец кошки','Гроза карасей','Знаток червяков','Мастер заброса','Ужас пруда','Повелитель поплавка','Легенда гаражей','Рыбный барон','Морской волк','Батя-профи','Гроза акул','Рыбный олигарх','Человек-удочка','Почти Карп'];
+function lvlTitle(l){return TITLES[l-1]||('Великий Батя '+l);}
+function xpNeed(l){return Math.round(40*Math.pow(l,1.45));}
+let streak=0,zhorT=0,zhorCd=70+Math.random()*50;
+function locIdx(){return LOCS.indexOf(curLoc());}
+function toast(a,b,ms=2600){$('tT1').textContent=a;$('tT2').textContent=b||'';$('toast').classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>$('toast').classList.add('hide'),ms);}
+function addXp(n){
+  save.xp+=n;
+  while(save.xp>=xpNeed(save.lvl)){
+    save.xp-=xpNeed(save.lvl);save.lvl++;
+    const bonus=save.lvl*25*(1+locIdx());
+    save.coins+=bonus;
+    setTimeout(()=>{toast('⭐ УРОВЕНЬ '+save.lvl+'!','Батя теперь «'+lvlTitle(save.lvl)+'» · +'+bonus+' 🪙');SFX.win();},400);
+  }
+  persist();updLvl();
+}
+function updLvl(){$('lvlTxt').textContent='⭐ '+save.lvl+' · '+lvlTitle(save.lvl);$('lvlBar').style.width=Math.min(100,save.xp/xpNeed(save.lvl)*100)+'%';}
+
+/* задания «от мужиков» */
+function makeQuest(){
+  const L=curLoc(),k=1+locIdx()*1.6,ty=rnd(['count','species','species','weight','streak','coins']);
+  const pool=L.fish.filter(([id,r])=>!SPECIES[id].junk&&!SPECIES[id].legend&&r>=5&&sAct(id)>=.8);
+  if(ty==='species'&&pool.length){
+    const id=rnd(pool)[0],n=1+Math.floor(Math.random()*3);
+    return {ty,id,n,p:0,loc:L.id,rw:Math.round((30+n*20)*k),txt:rnd(['Михалычу','Тёща заказала','Сосед на спор','Для ухи'])+': '+SPECIES[id].name+(n>1?' ×'+n:'')};
+  }
+  if(ty==='weight'){
+    const sps=pool.length?pool.map(([id])=>SPECIES[id]):[SPECIES.plotva];
+    const avg=sps.reduce((a,s)=>a+s.min+(s.max-s.min)*0.25,0)/sps.length;
+    const kg=Math.max(0.3,Math.round(avg*10)/10);
+    return {ty,kg,n:1,p:0,loc:L.id,rw:Math.round(70*k),txt:'Гаражу на зависть: от '+fmtW(kg)};
+  }
+  if(ty==='streak'){const n=3+Math.floor(Math.random()*3);return {ty,n,p:0,rw:Math.round((40+n*15)*k),txt:'Без позора: '+n+' подряд без срыва'};}
+  if(ty==='coins'){const n=Math.round((150+Math.random()*150)*k/10)*10;return {ty,n,p:0,rw:Math.round(n*0.35),txt:'Жене на шубу: продай на '+n};}
+  const n=3+Math.floor(Math.random()*4);
+  return {ty:'count',n,p:0,rw:Math.round((25+n*10)*k),txt:rnd(['Коту на неделю','Жене на уху','Накормить подъезд'])+': '+n+(n<5?' рыбы':' рыб')};
+}
+function ensureQuests(){
+  save.quests=save.quests.filter(q=>!q.loc||save.unlocked.includes(q.loc));
+  // задания по видам/весу с чужого водоёма меняем на местные
+  save.quests=save.quests.map(q=>(q.loc&&q.loc!==save.loc&&q.p===0)?makeQuest():q);
+  let guard=0;while(save.quests.length<2&&guard++<50){const q=makeQuest();if(!save.quests.some(x=>x.ty===q.ty))save.quests.push(q);}
+  persist();renderQuests();
+}
+function questProgress(ev){
+  let changed=false;
+  save.quests.forEach(q=>{
+    if(q.done)return;
+    if(ev.type==='catch'&&!ev.junk){
+      if(q.ty==='count'){q.p++;changed=true;}
+      if(q.ty==='species'&&ev.id===q.id){q.p++;changed=true;}
+      if(q.ty==='weight'&&ev.w>=q.kg){q.p=1;changed=true;}
+      if(q.ty==='streak'){q.p=Math.max(q.p,streak);changed=true;}
+    }
+    if(ev.type==='fail'&&q.ty==='streak'&&q.p<q.n){q.p=0;changed=true;}
+    if(ev.type==='sell'&&q.ty==='coins'){q.p=Math.min(q.n,q.p+ev.n);changed=true;}
+    if(q.p>=q.n&&!q.done){
+      q.done=true;save.coins+=q.rw;updCoins();
+      setTimeout(()=>{toast('✅ Задание выполнено!',q.txt.split(':')[0]+' · +'+q.rw+' 🪙');SFX.coin();},ev.type==='catch'?2900:300);
+      addXp(15);
+      setTimeout(()=>{save.quests=save.quests.filter(x=>x!==q);ensureQuests();},3200);
+    }
+  });
+  if(changed){persist();renderQuests();}
+}
+function renderQuests(){
+  const el=$('quests');
+  let h=zhorT>0?'<div class="zhor">🔥 ЖОР! Цены ×1.5 · '+Math.ceil(zhorT)+'с</div>':'';
+  if(streak>=2)h+='<div style="background:rgba(220,90,20,.75)">🔥 Серия '+streak+' · цена ×'+streakMult().toFixed(1)+'</div>';
+  h+=save.quests.map(q=>'<div class="'+(q.done?'done':'')+'">'+(q.done?'✅ ':'📋 ')+q.txt+' · '+(q.ty==='weight'?'':Math.min(q.p,q.n)+'/'+q.n+' · ')+'+'+q.rw+'🪙</div>').join('');
+  el.innerHTML=h;placeQuests();
+}
+function placeQuests(){const h=$('hudL').getBoundingClientRect();if(h.height)$('goal').style.top=(h.bottom+6)+'px';const g=$('goal').getBoundingClientRect();if(g.height)$('quests').style.top=(g.bottom+8)+'px';}
+function streakMult(){return 1+Math.min(streak,10)*0.1;}
+let zhorRender=0;
+function tickProgress(dt){
+  if(zhorT>0){zhorT-=dt;zhorRender-=dt;if(zhorRender<=0){zhorRender=1;renderQuests();}if(zhorT<=0){zhorT=0;renderQuests();floatMsg('Жор закончился. Рыба наелась','#cfe9ff');}}
+  else{zhorCd-=dt;if(zhorCd<=0){zhorT=30;zhorCd=(90+Math.random()*60)*(season().id==='autumn'?.6:1);toast('🔥 НАЧАЛСЯ ЖОР!','30 секунд клюёт всё подряд, цены ×1.5');SFX.bite();renderQuests();}}
+}
+
+/* ===== Поймали ===== */
+let current=null;
+function landed(){
+  SFX.win();vib([40,40,80]);splashDrops(fight.fx,waterY,14);
+  const sp=fish.sp;
+  const base=sp.junk?Math.round(sp.kg):Math.round(5+fish.w*sp.kg);
+  if(!sp.junk)streak++;
+  const sm=sp.junk?1:streakMult(),zm=(zhorT>0&&!sp.junk)?1.5:1;
+  const sp2=sp.junk?1:season().price;
+  const price=Math.round(base*sm*zm*sp2);
+  const wn0=(fish.w-sp.min)/(sp.max-sp.min);
+  const xp=sp.junk?3:Math.round(8+wn0*15+(sp.rare?20:0)+(sp.legend?200:0)+locIdx()*4);
+  const j=save.journal[sp.id]||{n:0,best:0};
+  const record=!sp.junk&&fish.w>j.best;
+  j.n++;if(fish.w>j.best)j.best=fish.w;save.journal[sp.id]=j;save.total++;persist();
+  const legendNow=sp.legend&&!save.goldCaught;
+  if(sp.legend){save.goldCaught=true;persist();}
+  current={sp,w:fish.w,price,record,first:j.n===1,legendNow,sm,zm,xp,sp2};
+  addXp(xp+(record&&j.n>1?10:0)+(j.n===1&&!sp.junk?15:0));
+  questProgress({type:'catch',id:sp.id,w:fish.w,junk:sp.junk});renderQuests();
+  st='result';setHint('');bubble=null;
+  const wn=(fish.w-sp.min)/(sp.max-sp.min);
+  let kind=sp.legend?'legend':sp.junk?sp.id:(record&&j.n>1)?'record':sp.rare?'rare':wn>0.6?'big':(wn<0.2&&fish.w<0.5)?'small':'normal';
+  current.quote=say(kind,false);bubble=null;
+  showResult();
+}
+function showResult(){
+  const c=current;
+  $('rTitle').textContent=c.legendNow?'🏆 БАТЯ НЕ ВРАЛ!':c.sp.junk?rnd(['Ну такое…','Это не рыба, Батя','Улов… условный']):(c.record&&!c.first?'🏆 Трофей! В рамочку!':rnd(['Есть контакт!','Попалась, родимая!','Ужин пойман!','Добыча!','Улов!']));
+  $('rName').textContent=c.sp.name;
+  $('rBonus').textContent=[c.sm>1?'🔥 Серия ×'+c.sm.toFixed(1):'',c.zm>1?'🍽️ Жор ×1.5':'',c.sp2>1?season().ico+' '+season().name+' ×'+c.sp2:'','⭐ +'+c.xp+' опыта'].filter(Boolean).join(' · ');
+  $('rQuote').textContent=c.quote?'Батя: «'+c.quote+'»':'';
+  $('rBadge').innerHTML=(c.first&&!c.sp.junk?'<span class="badge">НОВЕНЬКАЯ</span>':'')+(c.sp.legend?'<span class="badge" style="background:#d99a00">ЛЕГЕНДА</span>':c.sp.rare?'<span class="badge" style="background:#7a4ad9">РЕДКОСТЬ!</span>':'')+(c.legendNow?'<div class="muted" style="margin-top:6px">Тридцать лет насмешек — и вот он! Теперь собери весь журнал и утри нос Михалычу.</div>':'');
+  $('rWeight').textContent=c.sp.junk?({sapog:'Зато размер 45',banka:'Срок годности истёк в 1987',rakushka:'Шумит морем. И немного пахнет'}[c.sp.id]||'Ну хоть что-то'):'Вес: '+fmtW(c.w)+' · в Батиной байке: '+fmtW(c.w*(2+Math.floor(Math.random()*4)))+(c.record&&!c.first?' · РЕКОРД!':'');
+  $('rPrice').textContent='🪙 '+c.price;
+  $('bSell').textContent=c.sp.junk?'Сдать в металлолом (+'+c.price+')':rnd(SELL_TXT)+' (+'+c.price+')';
+  $('bDouble').classList.toggle('hidden',c.sp.junk||c.price<10);
+  $('bDouble').textContent='📺 Реклама: продать ×2 — жене на шубу (+'+c.price*2+')';
+  show('result');
+  drawFishOn($('fishCv'),c.sp,1);
+}
+const SELL_TXT=['Продать Михалычу','Толкнуть на рынке','Продать соседу','Впарить тёще','Сдать в рыбный ларёк',
+  'Выставить на барахолку','Продать котам оптом','Отдать за копейки','Продать как «свежак»','Продать с понтами',
+  'Обменять на монеты','Продать, пока не уснула','Сбыть по-тихому','Продать в столовую','Толкнуть туристам',
+  'Продать соседке Люде','Продать в ресторан «Жабры»','Продать дороже, чем стоит','Отдать в хорошие руки','Продать с байкой',
+  'Продать через забор','Сдать в гаражный кооператив','Продать Петровичу','Продать на уху','Продать с историей',
+  'Продать, пока свежая','Втюхать дачникам','Продать коту Ваське','Продать (жене не говорить)','Продать и не жалеть'];
+function fmtW(w){return w<1?Math.round(w*1000)+' г':w.toFixed(2).replace('.',',')+' кг';}
+function addCoins(n){save.coins+=n;persist();updCoins();SFX.coin();}
+function finishResult(){
+  if(save.total>=1)coach('guide','📘 Хочешь больше рыбы?','Загляни в гайд ❓ — там про снасти, время и Золотого Карпа');
+  hide('result');catchesSinceAd++;
+  const now=Date.now();
+  if(catchesSinceAd>=5&&now-lastAdTime>90000){
+    catchesSinceAd=0;lastAdTime=now;
+    Platform.showFullscreen(()=>{st='reel_in';castT=1;toIdle();});
+  }else{st='reel_in';castT=1;toIdle();}
+}
+
+/* ===== Отрисовка ===== */
+function seasonPal(){
+  return {spring:{f1:'#6fbf5a',f2:'#4f9a45',h1:'#86c46a',h2:'#5fa84f',g:'#4f8a4a'},
+    summer:{f1:'#4f8a4a',f2:'#3a6e3a',h1:'#6fa85a',h2:'#4f8a4a',g:'#3f6e45'},
+    autumn:{f1:'#c98a2e',f2:'#b5541f',h1:'#c9a04a',h2:'#c46a2a',g:'#8a6a3a'},
+    winter:{f1:'#dfe8ee',f2:'#b9c9d4',h1:'#eef3f6',h2:'#c9d6de',g:'#e8eef2'}}[season().id];
+}
+function drawScene(){
+  const L=curLoc(),SP=seasonPal();
+  let g=ctx.createLinearGradient(0,0,0,waterY);
+  g.addColorStop(0,L.sky[0]);g.addColorStop(1,L.sky[1]);
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,waterY);
+  if(L.shore==='mist'){ // закатное солнце
+    ctx.fillStyle='rgba(255,220,120,.95)';ctx.beginPath();ctx.arc(W*0.7,waterY-U*0.6,U*1.3,0,Math.PI*2);ctx.fill();
+  }else if(L.sun){ctx.fillStyle='rgba(255,240,180,.9)';ctx.beginPath();ctx.arc(W*0.8,waterY*0.35,U*0.9,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='rgba(255,255,255,.8)';
+  for(let i=0;i<3;i++){const cx=((t*U*0.15+i*W*0.45)%(W+U*4))-U*2,cy=waterY*(0.18+i*0.13);cloud(cx,cy,U*(0.6+i*0.15));}
+  // дальний берег
+  if(L.shore==='forest'||L.shore==='mist'){
+    const dark=L.shore==='mist';
+    ctx.fillStyle=dark?'#3d2f4a':SP.f1;ctx.beginPath();ctx.moveTo(0,waterY);
+    for(let x=0;x<=W+U;x+=U*0.5)ctx.lineTo(x,waterY-U*(0.55+0.3*Math.sin(x*0.05)+0.2*Math.sin(x*0.13)));
+    ctx.lineTo(W,waterY);ctx.fill();
+    ctx.fillStyle=dark?'#2a2036':SP.f2;
+    for(let x=U*0.3;x<W;x+=U*0.9){const h=U*(0.7+0.4*Math.abs(Math.sin(x*0.7)));ctx.beginPath();ctx.moveTo(x-U*0.3,waterY-U*0.3);ctx.lineTo(x,waterY-U*0.3-h);ctx.lineTo(x+U*0.3,waterY-U*0.3);ctx.fill();}
+  }else if(L.shore==='hills'){
+    ctx.fillStyle=SP.h1;ctx.beginPath();ctx.moveTo(0,waterY);
+    for(let x=0;x<=W+U;x+=U*0.3)ctx.lineTo(x,waterY-U*(0.7+0.5*Math.sin(x*0.02+1)+0.15*Math.sin(x*0.09)));
+    ctx.lineTo(W,waterY);ctx.fill();
+    ctx.fillStyle=SP.h2;
+    for(let x=U;x<W;x+=U*2.3){ctx.beginPath();ctx.arc(x,waterY-U*(0.9+0.5*Math.sin(x*0.02+1)),U*0.35,0,Math.PI*2);ctx.fill();}
+  }else if(L.shore==='mountains'){
+    for(let k=0;k<2;k++){
+      ctx.fillStyle=k?'#5e7a8f':'#8aa0b2';
+      for(let x=-U+k*U*1.5;x<W+U*2;x+=U*3.2){const h=U*(2.2+1.2*Math.abs(Math.sin(x*0.37+k)))*(k?0.75:1);
+        ctx.beginPath();ctx.moveTo(x-U*2,waterY);ctx.lineTo(x,waterY-h);ctx.lineTo(x+U*2,waterY);ctx.fill();
+        if(!k){ctx.fillStyle='#f4f8fb';ctx.beginPath();ctx.moveTo(x-U*0.45,waterY-h+U*0.45);ctx.lineTo(x,waterY-h);ctx.lineTo(x+U*0.45,waterY-h+U*0.45);ctx.fill();ctx.fillStyle='#8aa0b2';}}
+    }
+    ctx.fillStyle=SP.g;ctx.fillRect(0,waterY-U*0.2,W,U*0.2);
+  }else if(L.shore==='sea'){
+    // кораблик на горизонте
+    const sx=((t*U*0.2)%(W+U*4))-U*2;
+    ctx.fillStyle='#34495e';ctx.beginPath();ctx.moveTo(sx-U*0.6,waterY-U*0.05);ctx.lineTo(sx+U*0.6,waterY-U*0.05);ctx.lineTo(sx+U*0.4,waterY+U*0.1);ctx.lineTo(sx-U*0.4,waterY+U*0.1);ctx.fill();
+    ctx.fillRect(sx-U*0.1,waterY-U*0.45,U*0.25,U*0.4);
+    // чайки
+    ctx.strokeStyle='#333';ctx.lineWidth=2;
+    for(let i=0;i<3;i++){const gx=(W*0.3+i*U*1.3+Math.sin(t*0.5+i)*U)%W,gy=waterY*0.45+i*U*0.4+Math.sin(t*2+i)*U*0.1;
+      ctx.beginPath();ctx.moveTo(gx-U*0.25,gy);ctx.quadraticCurveTo(gx-U*0.12,gy-U*0.15,gx,gy);ctx.quadraticCurveTo(gx+U*0.12,gy-U*0.15,gx+U*0.25,gy);ctx.stroke();}
+  }
+  // вода
+  g=ctx.createLinearGradient(0,waterY,0,H);
+  g.addColorStop(0,L.water[0]);g.addColorStop(1,L.water[1]);
+  ctx.fillStyle=g;ctx.fillRect(0,waterY,W,H-waterY);
+  if(L.shore==='mist'){ // золотая дорожка и туман
+    ctx.fillStyle='rgba(255,210,110,.25)';
+    for(let i=0;i<10;i++){const y=waterY+U*0.2+i*U*0.45,w=U*(1.6-i*0.08)+Math.sin(t*2+i)*U*0.2;ctx.fillRect(W*0.7-w/2,y,w,U*0.12);}
+    ctx.fillStyle='rgba(255,230,255,.18)';ctx.fillRect(0,waterY-U*0.5,W,U*0.6);
+  }
+  // блики (на реке — быстрое течение)
+  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=2;
+  const sp=L.flow?2.5:0.3;
+  for(let i=0;i<14;i++){const y=waterY+U*0.3+i*U*0.55,dir=L.flow?1:(i%2?1:-1),x=(((i*137+t*U*sp*dir)%(W+U*2))+W+U*2)%(W+U*2)-U;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+U*(0.6+(i%3)*0.3)*(L.flow?1.6:1),y);ctx.stroke();}
+  if(L.waves){ // барашки
+    ctx.fillStyle='rgba(255,255,255,.55)';
+    for(let i=0;i<8;i++){const x=((i*W/8+t*U*0.6)%(W+U))-U*0.5,y=waterY+U*0.1+Math.sin(t*2+i)*U*0.05;ctx.beginPath();ctx.ellipse(x,y,U*0.35,U*0.07,0,0,Math.PI*2);ctx.fill();}
+  }
+  if(L.lilies){ // кувшинки
+    for(let i=0;i<4;i++){const x=pierW+U*1.2+i*(W-pierW-U*2)/4,y=waterY+U*(0.3+(i%2)*0.5);
+      ctx.fillStyle='#3d7a3a';ctx.beginPath();ctx.ellipse(x,y,U*0.4,U*0.12,0,0.3,Math.PI*2-0.3);ctx.lineTo(x,y);ctx.fill();
+      ctx.fillStyle=i%2?'#ffd1e8':'#fff';ctx.beginPath();ctx.arc(x,y-U*0.08,U*0.11,0,Math.PI*2);ctx.fill();}
+  }
+  // водоросли
+  ctx.strokeStyle=L.shore==='sea'?'rgba(40,120,90,.45)':'rgba(40,110,60,.55)';ctx.lineWidth=U*0.12;ctx.lineCap='round';
+  for(let x=pierW+U*0.5;x<W;x+=U*1.7){ctx.beginPath();ctx.moveTo(x,H);ctx.quadraticCurveTo(x+Math.sin(t+x)*U*0.4,H-U*1.2,x+Math.sin(t*1.3+x)*U*0.3,H-U*(1.8+(x%3)*0.3));ctx.stroke();}
+}
+function cloud(x,y,r){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.arc(x+r,y-r*0.3,r*0.85,0,Math.PI*2);ctx.arc(x+r*1.9,y,r*0.75,0,Math.PI*2);ctx.fill();}
+
+function drawPier(){
+  // сваи
+  ctx.fillStyle='#5a3416';
+  for(let x=U*0.4;x<pierW;x+=U*1.1)ctx.fillRect(x,pierY,U*0.22,H*0.25);
+  // настил
+  ctx.fillStyle='#9a6634';ctx.fillRect(0,pierY,pierW,U*0.35);
+  ctx.strokeStyle='#6b4220';ctx.lineWidth=2;
+  for(let x=0;x<pierW;x+=U*0.5){ctx.beginPath();ctx.moveTo(x,pierY);ctx.lineTo(x,pierY+U*0.35);ctx.stroke();}
+  // ведро
+  ctx.fillStyle='#8b9aa6';ctx.beginPath();ctx.moveTo(U*0.5,pierY);ctx.lineTo(U*0.6,pierY-U*0.7);ctx.lineTo(U*1.3,pierY-U*0.7);ctx.lineTo(U*1.4,pierY);ctx.fill();
+  // рыбак
+  const px=pierW-U*1.4,py=pierY;
+  ctx.fillStyle='#4a5a2a';ctx.fillRect(px-U*0.35,py-U*1.25,U*0.75,U*0.9); // куртка
+  ctx.fillStyle='#2d3a5a';ctx.fillRect(px,py-U*0.4,U*0.9,U*0.28);ctx.fillRect(px+U*0.7,py-U*0.4,U*0.22,U*0.7); // ноги
+  ctx.fillStyle='#f1c59a';ctx.beginPath();ctx.arc(px,py-U*1.55,U*0.32,0,Math.PI*2);ctx.fill(); // голова
+  if(season().id==='winter'){ // ушанка и снег на мостках
+    ctx.fillStyle='#6b4a2a';ctx.beginPath();ctx.arc(px,py-U*1.72,U*0.36,Math.PI,0);ctx.fill();
+    ctx.fillRect(px-U*0.38,py-U*1.75,U*0.16,U*0.42);ctx.fillRect(px+U*0.22,py-U*1.75,U*0.16,U*0.42);
+    ctx.fillStyle='#8a6a4a';ctx.fillRect(px-U*0.38,py-U*1.95,U*0.76,U*0.12);
+    ctx.fillStyle='#f4f8fb';ctx.fillRect(0,pierY-U*0.08,pierW,U*0.1);
+  }else{ctx.fillStyle='#c94b2b';ctx.fillRect(px-U*0.42,py-U*1.82,U*0.84,U*0.14);ctx.beginPath();ctx.arc(px,py-U*1.82,U*0.3,Math.PI,0);ctx.fill();} // кепка
+  // удочка
+  const tip=rodTip();
+  ctx.strokeStyle='#3b2410';ctx.lineWidth=U*0.1;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(tip.hx-U*0.3,tip.hy+U*0.25);
+  ctx.quadraticCurveTo(tip.hx+U*1.6,tip.hy-U*1.6+tip.bend*0.4,tip.x,tip.y);ctx.stroke();
+  // рука
+  ctx.strokeStyle='#4a5a2a';ctx.lineWidth=U*0.18;ctx.beginPath();ctx.moveTo(px+U*0.1,py-U*1.05);ctx.lineTo(tip.hx,tip.hy);ctx.stroke();
+  // катушка
+  ctx.fillStyle='#222';ctx.beginPath();ctx.arc(tip.hx+U*0.05,tip.hy+U*0.12,U*0.14,0,Math.PI*2);ctx.fill();
+}
+
+function drawLineAndBob(){
+  const tip=rodTip();
+  ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=1.3;
+  if(st==='fight'){
+    const f=fight,sag=(1-f.tension)*U*0.8,len=U*(0.9+Math.min(fish.w,20)*0.06)*(fish.sp.long||1);
+    const jumping=f.act==='jump'&&f.fy<waterY;
+    ctx.beginPath();ctx.moveTo(tip.x,tip.y);
+    if(jumping)ctx.quadraticCurveTo((tip.x+f.fx)/2,Math.min(tip.y,f.fy)+sag*.4,f.fx,f.fy);
+    else{ctx.quadraticCurveTo((tip.x+f.fx)/2,(tip.y+waterY)/2+sag,f.fx,waterY);ctx.lineTo(f.fx,f.fy);}
+    ctx.stroke();
+    ctx.save();
+    if(jumping){ctx.translate(f.fx,f.fy);ctx.rotate(f.jdir*(f.jk-.5)*1.5);drawFish(ctx,-f.jdir*len*0.42,0,len,fish.sp,f.jdir);}
+    else{ctx.globalAlpha=0.55+0.4*f.prog;const d=f.face||-1;const wig=f.act==='shake'?Math.sin(gameT*40)*0.35:0;
+      ctx.translate(f.fx,f.fy);ctx.rotate(wig);drawFish(ctx,-d*len*0.42,0,len,fish.sp,d);}
+    ctx.restore();
+    if(!jumping)drawBobber(f.fx-U*0.05,waterY,U*0.25);
+    return;
+  }
+  if(st==='menu')return;
+  for(const p of trail){ctx.fillStyle='rgba(255,255,255,'+(p.l*1.4)+')';ctx.beginPath();ctx.arc(p.x,p.y,U*0.05,0,Math.PI*2);ctx.fill();}
+  const by=bob.y+bob.dip;
+  ctx.beginPath();ctx.moveTo(tip.x,tip.y);
+  if(st==='idle'||st==='aim')ctx.lineTo(bob.x,by);
+  else ctx.quadraticCurveTo((tip.x+bob.x)/2,Math.max(tip.y,by)-U*0.2+U*0.6,bob.x,by);
+  ctx.stroke();
+  drawBobber(bob.x,by,0);
+}
+function drawBobber(x,y,sink){
+  const r=U*0.17;
+  ctx.save();
+  if(y>=waterY-1){ctx.beginPath();ctx.rect(0,0,W,waterY+U*0.04);ctx.clip();}
+  const Bb=curBob(),ry=r*Bb.len;
+  ctx.fillStyle=Bb.bot;ctx.beginPath();ctx.ellipse(x,y,r*(Bb.len>1.5?.7:1),ry,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=Bb.top;ctx.beginPath();ctx.ellipse(x,y,r*(Bb.len>1.5?.7:1),ry,0,Math.PI,0);ctx.fill();
+  ctx.fillStyle=Bb.top;ctx.fillRect(x-r*0.18,y-ry-r*1.4,r*0.36,r*1.5);
+  ctx.restore();
+}
+
+function drawFish(c,x,y,len,sp,dir=1){
+  c.save();c.translate(x,y);c.scale(dir,1);
+  if(sp.emoji){c.font=len*0.9+'px serif';c.textAlign='center';c.textBaseline='middle';c.fillText(sp.emoji,0,0);c.restore();return;}
+  if(sp.shape==='ray'){
+    c.strokeStyle=sp.fin;c.lineWidth=Math.max(1.5,len*0.025);c.beginPath();c.moveTo(-len*0.2,0);c.quadraticCurveTo(-len*0.5,len*0.05,-len*0.7,-len*0.02);c.stroke();
+    const g=c.createRadialGradient(0,0,len*0.05,0,0,len*0.4);g.addColorStop(0,shade(sp.c,30));g.addColorStop(1,sp.c);
+    c.fillStyle=g;c.beginPath();c.moveTo(len*0.32,0);c.quadraticCurveTo(len*0.05,-len*0.18,-len*0.05,-len*0.38);c.quadraticCurveTo(-len*0.12,-len*0.1,-len*0.25,0);c.quadraticCurveTo(-len*0.12,len*0.1,-len*0.05,len*0.38);c.quadraticCurveTo(len*0.05,len*0.18,len*0.32,0);c.fill();
+    c.fillStyle='#111';c.beginPath();c.arc(len*0.12,-len*0.05,len*0.02,0,Math.PI*2);c.arc(len*0.12,len*0.05,len*0.02,0,Math.PI*2);c.fill();
+    c.restore();return;
+  }
+  if(sp.shape==='shark'){
+    const h=len*0.14;
+    c.fillStyle=sp.fin;
+    c.beginPath();c.moveTo(-len*0.4,0);c.lineTo(-len*0.6,-h*2.2);c.lineTo(-len*0.52,0);c.lineTo(-len*0.58,h*1.3);c.closePath();c.fill();
+    c.beginPath();c.moveTo(-len*0.05,-h*0.9);c.lineTo(-len*0.12,-h*2.4);c.lineTo(len*0.1,-h*0.9);c.fill();
+    c.beginPath();c.moveTo(len*0.1,h*0.6);c.lineTo(-len*0.05,h*1.8);c.lineTo(-len*0.02,h*0.6);c.fill();
+    const g=c.createLinearGradient(0,-h,0,h);g.addColorStop(0,shade(sp.c,-25));g.addColorStop(0.55,sp.c);g.addColorStop(0.6,'#e8eef2');g.addColorStop(1,'#f4f7f9');
+    c.fillStyle=g;c.beginPath();c.ellipse(0,0,len*0.46,h,0,0,Math.PI*2);c.fill();
+    c.strokeStyle='rgba(0,0,0,.3)';c.lineWidth=1;for(let i=0;i<4;i++){c.beginPath();c.moveTo(len*(0.18-i*0.03),-h*0.4);c.lineTo(len*(0.16-i*0.03),h*0.3);c.stroke();}
+    c.fillStyle='#111';c.beginPath();c.arc(len*0.32,-h*0.25,len*0.018,0,Math.PI*2);c.fill();
+    c.strokeStyle='#333';c.beginPath();c.moveTo(len*0.36,h*0.45);c.quadraticCurveTo(len*0.3,h*0.7,len*0.24,h*0.5);c.stroke();
+    c.restore();return;
+  }
+  if(sp.shape==='sword'){c.strokeStyle=shade(sp.c,-20);c.lineWidth=Math.max(2,len*0.025);c.beginPath();c.moveTo(len*0.4,-len*0.02);c.lineTo(len*0.78,-len*0.03);c.stroke();}
+  const h=len*0.32*(sp.tall||1)/(sp.long?Math.sqrt(sp.long):1)*(sp.shape==='flat'?1.7:1);
+  // хвост
+  c.fillStyle=sp.fin;c.beginPath();c.moveTo(-len*0.38,0);c.lineTo(-len*0.62,-h*0.75);c.lineTo(-len*0.55,0);c.lineTo(-len*0.62,h*0.75);c.closePath();c.fill();
+  // спинной плавник
+  c.beginPath();c.moveTo(-len*0.12,-h*0.85);c.quadraticCurveTo(len*0.02,-h*1.45,len*0.12,-h*0.85);c.fill();
+  // тело
+  const g=c.createLinearGradient(0,-h,0,h);g.addColorStop(0,shade(sp.c,-30));g.addColorStop(0.5,sp.c);g.addColorStop(1,shade(sp.c,50));
+  c.fillStyle=g;c.beginPath();c.ellipse(0,0,len*0.45,h,0,0,Math.PI*2);c.fill();
+  if(sp.stripes){c.fillStyle='rgba(30,40,20,.35)';for(let i=-2;i<=2;i++){c.beginPath();c.ellipse(i*len*0.12,-h*0.15,len*0.03,h*0.7,0,0,Math.PI*2);c.fill();}}
+  if(sp.spots){c.fillStyle='rgba(230,240,180,.55)';for(let i=0;i<9;i++){c.beginPath();c.arc(-len*0.3+i*len*0.07,((i*37)%7-3)*h*0.18,len*0.022,0,Math.PI*2);c.fill();}}
+  if(sp.koi){c.fillStyle='#e0602f';[[-.2,-.3,.12],[.05,.1,.1],[.22,-.35,.08],[-.05,-.55,.07]].forEach(([a,b,r])=>{c.beginPath();c.arc(len*a,h*b,len*r,0,Math.PI*2);c.fill();});}
+  if(sp.shape==='flat'){c.fillStyle='#fff';c.beginPath();c.arc(len*0.28,-h*0.55,len*0.04,0,Math.PI*2);c.arc(len*0.2,-h*0.7,len*0.04,0,Math.PI*2);c.fill();c.fillStyle='#111';c.beginPath();c.arc(len*0.285,-h*0.55,len*0.02,0,Math.PI*2);c.arc(len*0.205,-h*0.7,len*0.02,0,Math.PI*2);c.fill();c.restore();return;}
+  if(sp.legend){c.shadowColor='#ffe680';c.shadowBlur=len*0.15;}
+  if(sp.gold){c.fillStyle='rgba(255,255,255,.35)';c.beginPath();c.ellipse(len*0.05,-h*0.4,len*0.25,h*0.2,0,0,Math.PI*2);c.fill();}
+  // брюшной плавник
+  c.fillStyle=sp.fin;c.beginPath();c.moveTo(len*0.05,h*0.75);c.lineTo(-len*0.05,h*1.15);c.lineTo(-len*0.12,h*0.7);c.fill();
+  // жабра
+  c.strokeStyle='rgba(0,0,0,.25)';c.lineWidth=Math.max(1,len*0.015);c.beginPath();c.arc(len*0.2,0,h*0.7,-1.1,1.1);c.stroke();
+  // глаз
+  c.fillStyle='#fff';c.beginPath();c.arc(len*0.31,-h*0.2,len*0.05,0,Math.PI*2);c.fill();
+  c.fillStyle='#111';c.beginPath();c.arc(len*0.32,-h*0.2,len*0.028,0,Math.PI*2);c.fill();
+  if(sp.whisk){c.strokeStyle=sp.fin;c.lineWidth=Math.max(1,len*0.012);c.beginPath();c.moveTo(len*0.43,h*0.1);c.quadraticCurveTo(len*0.6,h*0.5,len*0.5,h*1.1);c.moveTo(len*0.43,h*0.1);c.quadraticCurveTo(len*0.7,h*0.2,len*0.7,h*0.8);c.stroke();}
+  c.restore();
+}
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt;r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));return 'rgb('+r+','+g+','+b+')';}
+function drawFishOn(canvas,sp,known){
+  const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);
+  canvas.width=r.width*d;canvas.height=r.height*d;const c=canvas.getContext('2d');c.setTransform(d,0,0,d,0,0);
+  c.clearRect(0,0,r.width,r.height);
+  if(!known){c.globalAlpha=1;c.filter='brightness(0)';}
+  let len=Math.min(r.width*0.72,r.height/(0.32*(sp.tall||1)*(sp.shape==='flat'?1.7:1)*2*1.6));if(sp.emoji)len=Math.min(len,r.height*0.95);if(sp.shape==='sword')len*=0.8;if(sp.shape==='ray')len=Math.min(r.width*0.7,r.height*1.25);
+  drawFish(c,r.width/2+len*0.05,r.height/2,len,sp,1);
+}
+
+function drawEffects(){
+  for(const r of ripples){ctx.strokeStyle='rgba(255,255,255,'+(r.life*0.6)+')';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(r.x,r.y,r.r,r.r*0.3,0,0,Math.PI*2);ctx.stroke();}
+  ctx.fillStyle='rgba(220,240,255,.85)';
+  for(const d of drops){ctx.beginPath();ctx.arc(d.x,d.y,U*0.06,0,Math.PI*2);ctx.fill();}
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const m of msgs){ctx.globalAlpha=Math.min(1,m.life);let mf=U*0.5*m.size;ctx.font='bold '+mf+'px "Trebuchet MS",Arial';const mw=ctx.measureText(m.s).width;if(mw>W*0.94){mf*=W*0.94/mw;ctx.font='bold '+mf+'px "Trebuchet MS",Arial';}ctx.lineWidth=5;ctx.strokeStyle='rgba(0,0,0,.55)';ctx.strokeText(m.s,m.x??W/2,m.y);ctx.fillStyle=m.c;ctx.fillText(m.s,m.x??W/2,m.y);}
+  ctx.globalAlpha=1;
+}
+
+function drawUI(){
+  if(st==='menu'||st==='result')return;
+  // подсказка
+  if(hint){
+    const s=hintPulse?1+0.08*Math.sin(t*14):1;
+    ctx.save();ctx.translate(W/2,H-U*1.1);ctx.scale(s,s);
+    let fs=U*(hintPulse?0.62:0.45);ctx.font='bold '+fs+'px "Trebuchet MS",Arial';const tw=ctx.measureText(hint).width;if(tw>W*0.92){fs*=W*0.92/tw;ctx.font='bold '+fs+'px "Trebuchet MS",Arial';}ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.lineWidth=6;ctx.strokeStyle='rgba(0,0,0,.6)';ctx.strokeText(hint,0,0);ctx.fillStyle=hintCol;ctx.fillText(hint,0,0);
+    ctx.restore();
+  }
+  if(st==='aim'){
+    const bw=Math.min(W*0.8,U*8),bx=(W-bw)/2,by=H-U*2.2,bh=U*0.42;
+    ctx.fillStyle='rgba(0,0,0,.45)';roundRect(bx-4,by-4,bw+8,bh+8,10);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.15)';roundRect(bx,by,bw,bh,7);ctx.fill();
+    const [z0,z1]=spotPower().map(v=>Math.max(0,Math.min(1,v)));ctx.fillStyle='rgba(80,220,60,.7)';ctx.fillRect(bx+bw*z0,by,bw*(z1-z0),bh);ctx.font=(bh*0.8)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🐟',bx+bw*(z0+z1)/2,by-bh*0.9);
+    const g=ctx.createLinearGradient(bx,0,bx+bw,0);g.addColorStop(0,'#5bb8ff');g.addColorStop(1,'#ffcf3a');
+    ctx.fillStyle=g;ctx.save();roundRect(bx,by,bw,bh,7);ctx.clip();ctx.fillRect(bx,by,bw*power,bh);ctx.restore();
+    ctx.fillStyle='#fff';ctx.fillRect(bx+bw*power-2,by-5,4,bh+10);ctx.fillStyle='#fff';
+    ctx.font='bold '+U*0.3+'px Arial';ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText('Сила заброса',bx,by-6);
+    ctx.textAlign='right';const sp2=spotPower();ctx.fillText(power>=sp2[0]&&power<=sp2[1]?'🎯 В СТАЮ!':power>.6?'Далеко':power>.3?'Средне':'У бережка',bx+bw,by-6);
+  }
+  if(st==='fight'){
+    const bw=Math.min(W*0.8,U*8),bx=(W-bw)/2,by=H-U*2.4,bh=U*0.38;
+    // натяжение
+    ctx.fillStyle='rgba(0,0,0,.45)';roundRect(bx-4,by-4,bw+8,bh+8,10);ctx.fill();
+    const g=ctx.createLinearGradient(bx,0,bx+bw,0);
+    g.addColorStop(0,'#5bb8ff');g.addColorStop(0.12,'#43c02a');g.addColorStop(0.7,'#43c02a');g.addColorStop(0.85,'#ffcf3a');g.addColorStop(1,'#ff4a3a');
+    ctx.globalAlpha=.35;ctx.fillStyle=g;roundRect(bx,by,bw,bh,7);ctx.fill();ctx.globalAlpha=1;
+    ctx.fillStyle=g;ctx.save();roundRect(bx,by,bw,bh,7);ctx.clip();ctx.fillRect(bx,by,bw*Math.min(1,fight.tension),bh);ctx.restore();
+    ctx.fillStyle='#fff';ctx.font='bold '+U*0.3+'px Arial';ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText('Нервы лески',bx,by-6);
+    // дистанция
+    const py=by-U*1.1;
+    ctx.fillStyle='rgba(0,0,0,.45)';roundRect(bx-4,py-4,bw+8,bh*0.7+8,10);ctx.fill();
+    ctx.fillStyle='#ffd84a';roundRect(bx,py,Math.max(8,bw*fight.prog),bh*0.7,6);ctx.fill();
+    ctx.fillStyle='#fff';ctx.fillText('До сковородки',bx,py-6);
+    ctx.textAlign='right';ctx.fillText(fish.str>0.85?'Рыба качалась!':fish.str>0.5?'Кабанчик…':'',bx+bw,py-6);
+  }
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+/* ===== Цикл ===== */
+let last=performance.now();
+function loop(now){
+  const dt=Math.min((now-last)/1000,0.05);last=now;
+  if(!paused&&!anyPanelOpen())update(dt);
+  if(!paused&&st!=='menu'&&!anyPanelOpen())updAmbient(dt);
+  if(shakeT>0)shakeT-=dt;ctx.save();if(shakeT>0)ctx.translate((Math.random()-.5)*U*.25,(Math.random()-.5)*U*.25);
+  drawScene();drawSkyFx();drawUnderwater();drawIce();drawJumps();drawFlies();drawPier();drawLineAndBob();drawNightFx();drawSeasonFx();drawEffects();drawBubble(anyPanelOpen()?0:dt);ctx.restore();drawUI();
+  requestAnimationFrame(loop);
+}
+
+/* ===== Ввод ===== */
+cv.addEventListener('pointerdown',e=>{
+  pressing=true;
+  if(anyPanelOpen())return;
+  if(st!=='fight'&&tapGold(e.clientX,e.clientY)){pressing=false;return;}
+  if(st==='idle')startAim();
+  else if(st==='wait'||st==='bite')strike();
+});
+addEventListener('pointerup',()=>{pressing=false;releaseAim();});
+addEventListener('pointercancel',()=>pressing=false);
+addEventListener('blur',()=>pressing=false);
+addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat){cv.dispatchEvent(new PointerEvent('pointerdown'));}});
+addEventListener('keyup',e=>{if(e.code==='Space'){pressing=false;releaseAim();}});
+addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('visibilitychange',()=>{paused=document.hidden;pressing=false;try{if(actx){document.hidden?actx.suspend():actx.resume();}}catch(e){}});
+
+/* ===== Панели ===== */
+const $=id=>document.getElementById(id);
+function show(id){$(id).classList.remove('hidden');}
+function hide(id){$(id).classList.add('hidden');}
+function anyPanelOpen(){return ['shop','book','result','menu','map','baits','guide'].some(id=>!$(id).classList.contains('hidden'));}
+function updCoins(){$('coins').textContent='🪙 '+save.coins;updGoal();}
+
+function renderShop(){
+  $('shopList').innerHTML='';
+  SHOP.forEach(it=>{
+    const lv=save[it.k],max=it.cost.length,cost=it.cost[lv];
+    const row=document.createElement('div');row.className='row';
+    let bars='';for(let i=0;i<max;i++)bars+='<span class="lvl'+(i<lv?' on':'')+'"></span>';
+    row.innerHTML='<div class="ico">'+it.ico+'</div><div class="info"><b>'+it.name+'</b><br>'+it.desc+'<br>'+bars+'</div>';
+    const b=document.createElement('button');b.className='buy';
+    if(lv>=max){b.textContent='КУДА ЕЩЁ?';b.disabled=true;}
+    else{b.textContent='🪙 '+cost;b.disabled=save.coins<cost;b.onclick=()=>{if(save.coins>=cost){save.coins-=cost;save[it.k]++;persist();updCoins();SFX.coin();renderShop();maybeSay('shop',.4);}};}
+    row.appendChild(b);$('shopList').appendChild(row);
+  });
+}
+function renderBook(){
+  const list=$('bookList');list.innerHTML='';
+  const ids=allFishIds().filter(id=>!SPECIES[id].junk);
+  const got=ids.filter(id=>save.journal[id]).length;
+  $('bookStat').textContent='Видов: '+got+' из '+ids.length+' · Вытащено: '+save.total+' (по словам Бати — '+save.total*3+')'+(save.goldCaught?' · 🏆 Карп пойман! Батя не врал!':'');
+  const shown=[];
+  LOCS.forEach(L=>{
+    const h=document.createElement('div');h.className='sect';h.textContent=L.ico+' '+L.name+(save.unlocked.includes(L.id)?'':' 🔒');list.appendChild(h);
+    L.fish.forEach(([id])=>{
+      if(shown.includes(id)&&!SPECIES[id].junk)return;shown.push(id);
+      const f=SPECIES[id],j=save.journal[id];
+      const d=document.createElement('div');d.className='card';
+      const c=document.createElement('canvas');d.appendChild(c);
+      const info=document.createElement('div');
+      info.innerHTML=j?('<b>'+f.name+'</b>'+(f.junk?'Мусора выловлено: '+j.n:'Рекорд: '+fmtW(j.best)+'<br>Поймано: '+j.n+'<br>Клюёт: '+actIcons(f.id)+(seasonIcons(f.id)?' · '+seasonIcons(f.id):''))):'<b>'+(f.legend?'⭐ ???':'???')+'</b>'+(f.legend?'Цель всей Батиной жизни':f.junk?'Мусор тоже коллекция':'Батя ловил её только в байках');
+      d.appendChild(info);list.appendChild(d);
+      requestAnimationFrame(()=>drawFishOn(c,f,!!j));
+    });
+  });
+}
+function nextLocked(){return LOCS.find(l=>!save.unlocked.includes(l.id));}
+function updGoal(){setTimeout(placeQuests,0);
+  const el=$('goal'),n=nextLocked();
+  if(save.goldCaught){
+    const ids=allFishIds().filter(id=>!SPECIES[id].junk),got=ids.filter(id=>save.journal[id]).length;
+    el.innerHTML='🏆 Батя не врал! Журнал: '+got+'/'+ids.length;
+  }else if(n){
+    const idx=LOCS.indexOf(n);
+    el.innerHTML='🎯 К Карпу '+idx+'/4: '+n.ico+' '+n.name+' — 🪙 '+save.coins+'/'+n.cost;
+  }else el.innerHTML='🎯 Финал! Карп ждёт. Батя готов. Жена — нет ✨';
+
+}
+function renderMap(){
+  const list=$('mapList');list.innerHTML='';
+  LOCS.forEach((L,i)=>{
+    const open=save.unlocked.includes(L.id),cur=save.loc===L.id;
+    const prevOpen=i===0||save.unlocked.includes(LOCS[i-1].id);
+    const row=document.createElement('div');row.className='loc'+(cur?' cur':'')+(open?'':' locked');
+    const nf=L.fish.filter(([id])=>!SPECIES[id].junk).length;
+    row.innerHTML='<div class="ico">'+(open?L.ico:'🔒')+'</div><div class="info"><b>'+L.name+'</b><br>'+L.desc+'<br>Видов рыбы: '+nf+'</div>';
+    const b=document.createElement('button');
+    if(cur){b.textContent='Батя тут';b.disabled=true;}
+    else if(open){b.textContent='Поехали!';b.onclick=()=>travel(L);}
+    else if(!prevOpen){b.textContent='Сначала '+LOCS[i-1].ico;b.disabled=true;b.className='pay';}
+    else{b.className='pay';b.textContent='🪙 '+L.cost;b.disabled=save.coins<L.cost;b.onclick=()=>{if(save.coins>=L.cost){save.coins-=L.cost;save.unlocked.push(L.id);persist();updCoins();SFX.win();travel(L);}};}
+    row.appendChild(b);list.appendChild(row);
+  });
+}
+function travel(L){save.loc=L.id;persist();hide('map');ripples=[];drops=[];msgs=[];toIdle();floatMsg(L.ico+' '+L.name,'#fff',1.2);updGoal();ensureQuests();resetAmbient();say(L.id==='sea'?'sea':L.id==='legend'?'legendLoc':'travel');}
+
+$('bStart').onclick=()=>{hide('menu');$('hud').classList.remove('hidden');$('goal').classList.remove('hidden');$('quests').classList.remove('hidden');updLvl();ensureQuests();gameT=save.gameT||0;lastSeason=season().id;updBaitChip();resetAmbient();Music.start();updClock();coach('start','🎣 Добро пожаловать, Батя!','Ищи круги на воде — там рыба. Зажми палец, чтобы закинуть');updCoins();toIdle();try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}};
+$('bShop').onclick=()=>{renderShop();show('shop');};
+$('bMap').onclick=()=>{renderMap();show('map');};
+$('bMapClose').onclick=()=>hide('map');
+$('goal').onclick=()=>{renderMap();show('map');};
+$('bShopClose').onclick=()=>hide('shop');
+$('bBook').onclick=()=>{renderBook();show('book');};
+$('bBookClose').onclick=()=>hide('book');
+function updBaitChip(){$('baitChip').textContent='🎒 '+curBait().ico+' '+curLine().mm+' · №'+curHook().no+' ▾';}
+let gearTab='bait';
+const GEAR={
+  bait:{tab:'🪱 Наживка',list:()=>BAITS,own:'baits',cur:'curBait',hint:'Разная рыба любит разное. Как и тёща',
+    info:B=>{const who=B.boost.map(id=>SPECIES[id]).filter(Boolean).map(sp=>sp.name).slice(0,6).join(', ');const sp=B.wm<=.75?' · ⚡ клюёт быстро':B.wm>=1.05?' · 🐢 медленно':'';return 'Любят: '+who+sp;},ico:B=>B.ico,on:'На крючке'},
+  line:{tab:'🧵 Леска',list:()=>LINES,own:'lines',cur:'curLine',hint:'Тонкую рыба не видит, но тяжёлая её рвёт',
+    info:L=>'Держит до '+fmtW(L.max)+' · рыба замечает: '+(L.shy>=1.1?'почти нет':L.shy>=.95?'немного':L.shy>=.85?'заметно':'сильно'),ico:L=>L.ico,on:'Намотана'},
+  hook:{tab:'🪝 Крючок',list:()=>HOOKS,own:'hooks',cur:'curHook',hint:'Маленький разогнёт крупная, большой не заглотит мелочь',
+    info:H=>'Для рыбы '+fmtW(Math.max(.05,H.min))+' – '+fmtW(H.max),ico:H=>'🪝',on:'Привязан'},
+  bob:{tab:'🎈 Поплавок',list:()=>BOBBERS,own:'bobbers',cur:'curBob',hint:'Хороший поплавок даёт больше времени на подсечку',
+    info:Bb=>'Подсечка: +'+Bb.win.toFixed(2)+' с'+(Bb.sens>=1.3?' · очень чуткий':'')+(Bb.glow?' · 🌙 светится ночью':' · ночью плохо видно')+(Bb.sea?' · на море хуже':''),ico:Bb=>'<span style="display:inline-block;width:18px;height:'+(18*Bb.len)+'px;border-radius:50%;background:linear-gradient('+Bb.top+' 50%,'+Bb.bot+' 50%);box-shadow:'+(Bb.glow?'0 0 8px '+Bb.top:'none')+'"></span>',on:'Стоит'}
+};
+function renderBaits(){
+  const G=GEAR[gearTab];
+  $('gearTabs').innerHTML='';
+  Object.keys(GEAR).forEach(k=>{const bt=document.createElement('button');bt.textContent=GEAR[k].tab;bt.className=k===gearTab?'on':'';bt.onclick=()=>{gearTab=k;renderBaits();};$('gearTabs').appendChild(bt);});
+  $('gearHint').textContent=G.hint;
+  const list=$('baitList');list.innerHTML='';
+  G.list().forEach(it=>{
+    const own=save[G.own].includes(it.id),sel=save[G.cur]===it.id;
+    const row=document.createElement('div');row.className='row'+(sel?' sel':'');
+    row.innerHTML='<div class="ico">'+G.ico(it)+'</div><div class="info"><b>'+it.name+'</b><br>'+it.desc+'<div class="tags">'+G.info(it)+'</div></div>';
+    const b=document.createElement('button');b.className='buy';
+    if(sel){b.textContent=G.on;b.disabled=true;}
+    else if(own){b.textContent='Взять';b.onclick=()=>{save[G.cur]=it.id;persist();updBaitChip();renderBaits();SFX.coin();};}
+    else{b.textContent='🪙 '+it.cost;b.disabled=save.coins<it.cost;b.onclick=()=>{if(save.coins>=it.cost){save.coins-=it.cost;save[G.own].push(it.id);save[G.cur]=it.id;persist();updCoins();updBaitChip();renderBaits();SFX.win();maybeSay('shop',.5);}};}
+    row.appendChild(b);list.appendChild(row);
+  });
+}
+/* ===== Гайды ===== */
+let guideTab='basics';
+function recHook(sp){const tw=sp.min+(sp.max-sp.min)*.35;return (HOOKS.find(h=>tw>=h.min&&tw<=h.max)||HOOKS[HOOKS.length-1]).no;}
+function recLine(sp){const tw=sp.min+(sp.max-sp.min)*.35;return (LINES.find(l=>l.max>=tw)||LINES[LINES.length-1]).mm;}
+function likedBaits(id){return BAITS.filter(B=>B.boost.includes(id)).map(B=>B.ico).join('')||'—';}
+const GUIDES={
+  basics:{tab:'🎣 Как ловить',html:()=>`
+    <h3>1. Найди рыбу</h3><p>Рыба держится <b>стаей</b>. Ищи на воде <b>круги</b> и <b>прыгающую рыбу</b> — там рыбное место. Каждую минуту стая переплывает.</p>
+    <h3>2. Закинь в стаю</h3><p><b>Зажми</b> палец — Батя замахнётся, внизу побежит шкала силы. <b>Отпусти</b>, когда указатель в <b>зелёной зоне</b> 🐟 — поплавок упадёт прямо в стаю.</p>
+    <div class="tip">Мимо стаи рыба подходит редко. Не клюёт 10 секунд — тапни, Батя перезакинет без штрафа.</div>
+    <h3>3. Жди и смотри под воду</h3><p>Рыба подплывает к крючку, кружит и <b>нюхает</b> наживку — поплавок подёргивается. Не дёргай! Если наживка не нравится, рыба уплывёт со словами «Фу!».</p>
+    <h3>4. Подсекай</h3><p>Поплавок ушёл под воду и внизу «ПОДСЕКАЙ!» — <b>тапни сразу</b>. На это меньше секунды. Хороший поплавок даёт больше времени.</p>
+    <h3>5. Вываживай</h3><p><b>Держи</b> палец — Батя мотает. Следи за полоской <b>«Нервы лески»</b>: покраснела — <b>отпусти</b>, иначе леска порвётся. Долго не мотаешь — слабина, рыба уйдёт. Полоска «До сковородки» заполнилась — рыба твоя!</p>
+    <div class="tip">Рыба делает рывки — в этот момент лучше отпустить палец.</div>`},
+  gear:{tab:'🎒 Снасти',html:()=>`
+    <p>Снасти — в зелёной кнопке <b>🎒</b> под уровнем.</p>
+    <h3>🪱 Наживка</h3><p>Каждая рыба любит свою наживку. На любимую берёт в <b>2–4 раза чаще</b>, на чужую — часто отказывается. Хлеб — для мелочи, живец и блесна — для хищников, кукуруза и тесто — для карпов, креветка — для моря.</p>
+    <h3>🧵 Леска</h3><p>Тонкая — рыба её не видит, клюёт чаще, но <b>тяжёлую рыбу не держит</b>. Толстая держит акулу, но рыба её замечает. Если рыба тяжелее, чем держит леска, появится «⚠️ Тяжёлая!» — отпускай чаще.</p>
+    <h3>🪝 Крючок</h3><p>Маленький крючок крупная рыба <b>разгибает</b>. Большой — <b>мелочь не заглатывает</b>. Подбирай под вес рыбы.</p>
+    <h3>🎈 Поплавок</h3><p>Чем лучше поплавок, тем больше времени на подсечку. Ночью нужен <b>«Светлячок»</b> или Золотой — обычный в темноте почти не видно.</p>
+    <h3>🛒 Магазин</h3><p><b>Катушка</b> — мотает быстрее. <b>Удилище</b> — гасит рывки. <b>Прикормка</b> — крупнее рыба и чаще редкие.</p>`},
+  time:{tab:'🕐 Время',html:()=>`
+    <p>Сутки в игре длятся <b>4 минуты</b>, сезон — <b>2 суток</b> (8 минут). Время — в чипе рядом со снастями, тапни его — Батя подскажет, кто сейчас клюёт.</p>
+    <h3>Время суток</h3><table><tr><th></th><th>Кто активен</th></tr>
+    <tr><td>🌅 Утро 4–10</td><td>щука, жерех, форель, линь, тунец, <b>Золотой Карп</b></td></tr>
+    <tr><td>☀️ День 10–18</td><td>окунь, голавль, амур, толстолобик, кои</td></tr>
+    <tr><td>🌇 Вечер 18–22</td><td>лещ, язь, судак, скат, акула</td></tr>
+    <tr><td>🌙 Ночь 22–4</td><td>сом, налим, судак, осётр, краб, осьминог, рыба-меч</td></tr></table>
+    <h3>Времена года</h3><table>
+    <tr><td>🌸 Весна</td><td>щука жирует, плотва, карась. Золотой Карп активнее</td></tr>
+    <tr><td>☀️ Лето</td><td>карп, амур, сом, кои, тунец, акула. Клюёт быстрее</td></tr>
+    <tr><td>🍂 Осень</td><td>хищники: щука, судак, окунь. <b>Жор бывает чаще</b>, рыба дороже ×1.1</td></tr>
+    <tr><td>❄️ Зима</td><td>налим, корюшка, окунь. Клюёт медленнее, но <b>рыба дороже ×1.25</b>. Карп и сом спят</td></tr></table>`},
+  money:{tab:'💰 Заработок',html:()=>`
+    <h3>Как разбогатеть, не говоря жене</h3>
+    <p>📋 <b>Задания</b> справа — выполняй и получай монеты. Подстраиваются под водоём.</p>
+    <p>🔥 <b>Серия</b> — каждая рыба подряд без срыва +10% к цене (до ×2). Сорвалась — серия сгорает.</p>
+    <p>🍽️ <b>Жор</b> — 30 секунд всё клюёт, цены ×1.5. Лови быстрее!</p>
+    <p>🪙 <b>Золотые пузыри</b> поднимаются со дна — тапни по ним.</p>
+    <p>📺 <b>Реклама ×2</b> — после улова можно продать рыбу вдвое дороже.</p>
+    <p>⭐ <b>Уровни</b> — за опыт дают звание и монеты.</p>
+    <p>🏆 <b>Рекорды и новые виды</b> дают больше опыта.</p>
+    <div class="tip">Дорогая рыба: крупная, редкая, морская. Хищники на живца и блесну приносят больше всего.</div>`},
+  carp:{tab:'✨ Золотой Карп',html:()=>`
+    <p>Цель игры — поймать <b>Золотого Карпа</b> и доказать, что Батя не врал.</p>
+    <h3>Путь</h3><p>🏡 Пруд → 🌊 Река (250) → ⛰️ Озеро (1 200) → 🐋 Море (4 500) → ✨ Легендарная заводь (14 000). Открывай на карте 🗺️.</p>
+    <h3>Рецепт Бати</h3><p>🥟 Наживка: <b>Тесто «Бабушкино»</b> или <b>✨ Золотая мормышка</b><br>🌅 Время: <b>утро</b>, лучше <b>весной</b><br>🧵 Леска: от <b>0,40</b> (карп до 15 кг)<br>🪝 Крючок: <b>№4</b> или крупнее<br>🎈 Поплавок: Спортивный или Золотой — карп хитрый, окно подсечки короткое<br>🎯 Закидывай точно в стаю</p>
+    <div class="tip">Без нужной наживки карп почти никогда не берёт. Зимой он спит.</div>`},
+  fish:{tab:'🐟 Рыбы',html:()=>LOCS.map(L=>'<h3>'+L.ico+' '+L.name+'</h3><table><tr><th>Рыба</th><th>Когда</th><th>Наживка</th><th>Снасть</th></tr>'+
+      L.fish.filter(([id])=>!SPECIES[id].junk).map(([id])=>{const sp=SPECIES[id],known=save.journal[id];
+        return '<tr><td><b>'+(known?sp.name:'??? '+(sp.legend?'⭐':''))+'</b><br>'+fmtW(sp.min)+'–'+fmtW(sp.max)+'</td><td>'+actIcons(id)+(seasonIcons(id)?'<br>'+seasonIcons(id):'')+'</td><td>'+likedBaits(id)+'</td><td>🧵'+recLine(sp)+'<br>🪝№'+recHook(sp)+'</td></tr>';}).join('')+'</table>').join('')+'<p class="muted">Названия непойманных рыб скрыты — но привычки Батя уже разведал.</p>'}
+};
+function renderGuide(){
+  $('guideTabs').innerHTML='';
+  Object.keys(GUIDES).forEach(k=>{const b=document.createElement('button');b.textContent=GUIDES[k].tab;b.className=k===guideTab?'on':'';b.onclick=()=>{guideTab=k;renderGuide();};$('guideTabs').appendChild(b);});
+  $('guideBody').innerHTML=GUIDES[guideTab].html();
+  $('guideBody').parentElement.scrollTop=0;
+}
+$('bGuide').onclick=()=>{renderGuide();show('guide');};
+$('bGuideClose').onclick=()=>hide('guide');
+/* подсказки новичку — по одному разу */
+function coach(key,title,text){save.tips=save.tips||{};if(save.tips[key])return;save.tips[key]=1;persist();setTimeout(()=>toast(title,text,4500),300);}
+$('timeChip').onclick=()=>{const pd=period(),L=curLoc();const top=L.fish.map(([id])=>id).filter(id=>!SPECIES[id].junk&&act(id)>=1.3).sort((a,b)=>act(b)-act(a)).map(id=>SPECIES[id].name);floatMsg(season().ico+' '+season().name+', '+PERIODS[pd].name.toLowerCase()+(top.length?': лучше клюют '+top.slice(0,4).join(', '):': клюёт всё понемногу'),'#fff3b0',.8);};
+$('baitChip').onclick=()=>{renderBaits();show('baits');};
+$('bBaitClose').onclick=()=>hide('baits');
+$('bMusic').classList.toggle('off',!save.music);
+$('bMusic').onclick=()=>{save.music=!save.music;persist();$('bMusic').classList.toggle('off',!save.music);save.music?Music.start():Music.stop();};
+
+$('bMute').textContent=save.muted?'🔇':'🔊';
+$('bMute').onclick=()=>{save.muted=!save.muted;persist();$('bMute').textContent=save.muted?'🔇':'🔊';};
+$('bSell').onclick=()=>{addCoins(current.price);if(!current.sp.junk)questProgress({type:'sell',n:current.price});finishResult();};
+$('bDouble').onclick=()=>{
+  let got=false;
+  Platform.showRewarded(()=>{got=true;},()=>{const n=current.price*(got?2:1);addCoins(n);questProgress({type:'sell',n});finishResult();});
+};
+// при закрытии панелей во время боя не теряем рыбу: бой ставится на паузу автоматически (update не идёт)
+
+/* ===== Старт ===== */
+bob.x=rodTip().x;bob.y=rodTip().y+U*1.6;
+Platform.init().then(()=>Platform.gameReady());
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
